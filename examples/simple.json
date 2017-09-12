@@ -18,8 +18,8 @@
                 }
             }, 
             "pos": [
-                181, 
-                135
+                294, 
+                150
             ], 
             "class": "operations.Add"
         }, 
@@ -34,8 +34,8 @@
                 }
             }, 
             "pos": [
-                289, 
-                145
+                522, 
+                136
             ], 
             "class": "sources.FloatSource"
         }, 
@@ -47,8 +47,8 @@
                 }
             }, 
             "pos": [
-                63, 
-                193
+                81, 
+                255
             ], 
             "class": "sources.FloatSource"
         }, 
@@ -60,11 +60,11 @@
                 }
             }, 
             "pos": [
-                65, 
-                83
+                80, 
+                82
             ], 
             "class": "sources.FloatSource"
         }
     }, 
-    "zoom": 1.0
+    "zoom": 1.4000000000000004
 }
