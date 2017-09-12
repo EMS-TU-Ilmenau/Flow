@@ -1,0 +1,93 @@
+{
+    "nodes": {
+        "Int out": {
+            "inputs": {
+                "value": {
+                    "default": 2, 
+                    "connection": null
+                }
+            }, 
+            "pos": [
+                114, 
+                130
+            ], 
+            "class": "sources.IntegerSource"
+        }, 
+        "Int out.1": {
+            "inputs": {
+                "value": {
+                    "default": 1, 
+                    "connection": {
+                        "node": "Multiplication", 
+                        "output": "c"
+                    }
+                }
+            }, 
+            "pos": [
+                292, 
+                328
+            ], 
+            "class": "sources.IntegerSource"
+        }, 
+        "Print": {
+            "inputs": {
+                "data": {
+                    "default": null, 
+                    "connection": {
+                        "node": "Multiplication", 
+                        "output": "c"
+                    }
+                }
+            }, 
+            "pos": [
+                707, 
+                272
+            ], 
+            "class": "sinks.Print"
+        }, 
+        "Replicate": {
+            "inputs": {
+                "data": {
+                    "default": null, 
+                    "connection": {
+                        "node": "Int out", 
+                        "output": "int"
+                    }
+                }, 
+                "n": {
+                    "default": 4, 
+                    "connection": null
+                }
+            }, 
+            "pos": [
+                271, 
+                134
+            ], 
+            "class": "utility.Replicate"
+        }, 
+        "Multiplication": {
+            "inputs": {
+                "a": {
+                    "default": null, 
+                    "connection": {
+                        "node": "Replicate", 
+                        "output": "replicates"
+                    }
+                }, 
+                "b": {
+                    "default": null, 
+                    "connection": {
+                        "node": "Int out.1", 
+                        "output": "int"
+                    }
+                }
+            }, 
+            "pos": [
+                469, 
+                162
+            ], 
+            "class": "operations.Mul"
+        }
+    }, 
+    "zoom": 1.5000000000000004
+}

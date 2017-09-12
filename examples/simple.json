@@ -1,0 +1,70 @@
+{
+    "nodes": {
+        "Addition": {
+            "inputs": {
+                "a": {
+                    "default": null, 
+                    "connection": {
+                        "node": "Float out", 
+                        "output": "float"
+                    }
+                }, 
+                "b": {
+                    "default": null, 
+                    "connection": {
+                        "node": "Float out.1", 
+                        "output": "float"
+                    }
+                }
+            }, 
+            "pos": [
+                181, 
+                135
+            ], 
+            "class": "operations.Add"
+        }, 
+        "Float out.2": {
+            "inputs": {
+                "value": {
+                    "default": 0.0, 
+                    "connection": {
+                        "node": "Addition", 
+                        "output": "c"
+                    }
+                }
+            }, 
+            "pos": [
+                289, 
+                145
+            ], 
+            "class": "sources.FloatSource"
+        }, 
+        "Float out.1": {
+            "inputs": {
+                "value": {
+                    "default": 1.0, 
+                    "connection": null
+                }
+            }, 
+            "pos": [
+                63, 
+                193
+            ], 
+            "class": "sources.FloatSource"
+        }, 
+        "Float out": {
+            "inputs": {
+                "value": {
+                    "default": 41.0, 
+                    "connection": null
+                }
+            }, 
+            "pos": [
+                65, 
+                83
+            ], 
+            "class": "sources.FloatSource"
+        }
+    }, 
+    "zoom": 1.0
+}
