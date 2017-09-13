@@ -1,16 +1,25 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from .graph import Graph # for building the flow graph
+from .node import ptype # for identifying port data types
 from . import nodes # the node database
-import Tkinter as tk # for building the gui
-import tkFont # for sizing node via fontsize
-import tkFileDialog # for opening a file with filedialog
-from ScrolledText import ScrolledText # for easy scrollable text
 import os, fnmatch # for scanning the submodules for node classes
 import re # for matching and extracting string pattern
 import json # for parsing JSON formatted graph files
 import logging # for debugging and warning user
 import threading # for making graph processing non-blocking
+try:
+	# for python 2
+	import Tkinter as tk # for building the gui
+	import tkFont # for sizing node via fontsize
+	import tkFileDialog # for opening a file with filedialog
+	from ScrolledText import ScrolledText # for easy scrollable text
+except:
+	# for python 3
+	import tkinter as tk
+	import tkinter.font as tkFont
+	import tkinter.filedialog as tkFileDialog
+	from tkinter.scrolledtext import ScrolledText
 
 # global design colors
 COL_BG = '#303030' # background
@@ -21,14 +30,15 @@ COL_HL = '#F0F0F0' # highlights (most text)
 COL_DATA = '#A0A0A0' # default and result value texts
 # port data type colors
 COL_DTYPE = {
-	object: '#D0D0D0', # will also be used for any other type not specified here
-	bool: '#101010',  
-	int: '#0080FF', 
-	float: '#25D4EF', 
-	list: '#FF8000', 
-	tuple: '#FFD500', 
-	str: '#7AC137', 
-	file: '#198B4A'}
+	ptype.OBJECT: '#D0D0D0', 
+	ptype.BOOL: '#101010', 
+	ptype.INT: '#0080FF', 
+	ptype.FLOAT: '#25D4EF', 
+	ptype.COMPLEX: '#AC58FA', 
+	ptype.LIST: '#FF8000', 
+	ptype.TUPLE: '#FFD500', 
+	ptype.STR: '#7AC137', 
+	ptype.FILE: '#198B4A'}
 
 
 class Point(object):
@@ -48,6 +58,9 @@ class Point(object):
 		return Point(self.x*fac, self.y*fac)
 	
 	def __div__(self, fac):
+		return Point(self.x/fac, self.y/fac)
+	
+	def __truediv__(self, fac): # used when __future__.division
 		return Point(self.x/fac, self.y/fac)
 	
 	def __str__(self):
@@ -80,7 +93,7 @@ class NodeVisual(object):
 		title.bind('<Button-1>', self.dragStart)
 		title.bind('<B1-Motion>', self.dragMotion)
 		# add delete button
-		delBtn = tk.Label(head, text=' × ', font=self.font, 
+		delBtn = tk.Label(head, text=u' × ', font=self.font, 
 			bg=COL_MAIN, fg=COL_HL, cursor='X_cursor')
 		delBtn.pack(side=tk.RIGHT)
 		delBtn.bind('<Button-1>', lambda _: self.graphEditor.deleteNode(self.node.name))
@@ -135,8 +148,8 @@ class InputVisual(object):
 		self.body.pack(fill=tk.X)
 		
 		# add port with color for data type
-		self.port = tk.Label(self.body, text='⚬', font=font, bg=COL_PRIM, 
-			fg=COL_DTYPE.get(self.input.dtype, COL_DTYPE[object]), 
+		self.port = tk.Label(self.body, text=u'⚬', font=font, bg=COL_PRIM, 
+			fg=COL_DTYPE.get(self.input.type, COL_DTYPE[ptype.OBJECT]), 
 			cursor='crosshair')
 		self.port.pack(side=tk.LEFT)
 		self.port.input = self # retrieve with: getattr(widget, 'input', None)
@@ -149,29 +162,28 @@ class InputVisual(object):
 		self.title.pack(side=tk.LEFT, padx=3)
 		
 		# add default value based on data type
-		if self.input.dtype is str or self.input.dtype is file:
+		if self.input.type in (ptype.STR, ptype.FILE):
 			# string
 			self.value = tk.StringVar()
 			self.default = tk.Entry(self.body, textvariable=self.value)
 			# file
-			if self.input.dtype is file:
+			if self.input.type is ptype.FILE:
 				self.title.bind('<Button-1>', self.openFile)
 				self.title.bind('<Button-2>', self.saveFile)
 				self.title.bind('<Button-3>', self.saveFile)
 				self.title.config(cursor='bottom_side')
-		elif self.input.dtype is int or self.input.dtype is float:
-			# int
-			if self.input.dtype is int:
+		elif self.input.type in (ptype.INT, ptype.FLOAT):
+			# int and float
+			if self.input.type is ptype.INT:
 				self.value = tk.IntVar()
-			# float
-			if self.input.dtype is float:
+			else:
 				self.value = tk.DoubleVar()
-			# setup numeric adjustment dragging in the title
+			# setup numeric adjustment by dragging in the title
 			self.default = tk.Entry(self.body, textvariable=self.value)
 			self.title.bind('<Button-1>', self.startAdjustNum)
 			self.title.bind('<B1-Motion>', self.adjustNum)
 			self.title.config(cursor='sb_h_double_arrow')
-		elif self.input.dtype is bool:
+		elif self.input.type is ptype.BOOL:
 			# bool
 			self.value = tk.BooleanVar()
 			self.default = tk.Checkbutton(self.body, variable=self.value)
@@ -244,7 +256,7 @@ class OutputVisual(object):
 		
 		# add port with color for data type
 		self.port = tk.Label(self.body, text='⚬', font=font, bg=COL_PRIM, 
-			fg=COL_DTYPE.get(self.output.dtype, COL_DTYPE[object]), 
+			fg=COL_DTYPE.get(self.output.type, COL_DTYPE[ptype.OBJECT]), 
 			cursor='crosshair')
 		self.port.pack(side=tk.RIGHT)
 		self.port.output = self
@@ -364,7 +376,9 @@ class GraphEditor(object):
 		'''Instantiates a node in the graph.
 		:param classPath: class import path relative to "flow.nodes"
 		:param spawnPos: Point position where the node is placed'''
-		exec('node = nodes.{}()'.format(classPath))
+		namespace = {'nodes': nodes} # because python3
+		exec('node = nodes.{}()'.format(classPath), namespace)
+		node = namespace['node']
 		node.classPath = classPath # remember origin for saving graph
 		# place node visual on panel
 		pos = spawnPos or self.spawnPos
@@ -544,7 +558,7 @@ class NodeDatabase(object):
 		for path, dirs, files in os.walk(nodesPath):
 			self.makeDirectoryMenu(menuDict, path, dirs, files)
 		# for faster access, skip the first menu (contains only root as entry)
-		self.menu = menuDict[nodesPath].children.values()[0]
+		self.menu = list(menuDict[nodesPath].children.values())[0] # list because of python3
 	
 	def makeModuleMenu(self, parentMenu, filePath):
 		'''Makes a menu filled with menu items for each class in the module.
@@ -583,6 +597,8 @@ class NodeDatabase(object):
 		:param dirs: list of sub-directories in path
 		:param files: list of filenames in path
 		'''
+		if '__pycache__' in path:
+			return
 		dirMenu = menuDict[path]
 		subMenu = tk.Menu(dirMenu)
 		for filename in fnmatch.filter(files, '*.py'):
@@ -697,7 +713,7 @@ class FlowApp(object):
 		size = Point(1280, 720)
 		screen = Point(self.root.winfo_screenwidth(), self.root.winfo_screenheight())
 		pos = screen/2-size/2
-		self.root.geometry('{}x{}+{}+{}'.format(size.x, size.y, pos.x, pos.y))
+		self.root.geometry('{}x{}+{}+{}'.format(size.x, size.y, int(pos.x), int(pos.y)))
 		self.root.title('Graph Editor')
 		
 		# making the menus
@@ -712,7 +728,12 @@ class FlowApp(object):
 		logging.basicConfig(stream=self.logHandler, level=logging.WARNING)
 		
 		# start working
-		self.root.mainloop()
+		while True:
+			try:
+				self.root.mainloop()
+				break
+			except UnicodeDecodeError:
+				pass # because python3 bug
 	
 	def makeMenubar(self):
 		'''Creates the menubar with a file menu for saving and opening a graph'''
@@ -857,7 +878,8 @@ class FlowApp(object):
 			return
 		
 		self.stats.set('')
-		for nodeName in self.graphEditor.graph.nodeDict.keys():
+		# list because python3
+		for nodeName in list(self.graphEditor.graph.nodeDict.keys()):
 			self.graphEditor.deleteNode(nodeName)
 	
 	def onLogEnable(self):

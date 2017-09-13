@@ -1,4 +1,4 @@
-from flow.node import Node
+from flow.node import Node, ptype
 
 class Operation(Node):
 	'''Base class for all operations with two inputs and one output'''

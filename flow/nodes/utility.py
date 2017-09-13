@@ -1,4 +1,4 @@
-from flow.node import Node
+from flow.node import Node, ptype
 import time
 
 class PackArray(Node):
@@ -12,7 +12,7 @@ class PackArray(Node):
 		# build inputs and outputs
 		self.dataIn = self.addInput('elements')
 		self.addInput('length', 0)
-		self.arrOut = self.addOutput('array', list)
+		self.arrOut = self.addOutput('array', ptype.LIST)
 	
 	def prepare(self):
 		# for collecting the elements
@@ -36,7 +36,7 @@ class UnpackArray(Node):
 	
 	def __init__(self):
 		super(UnpackArray, self).__init__('Unpack array')
-		self.addInput('array', dtype=list)
+		self.addInput('array', type=ptype.LIST)
 		self.elOut = self.addOutput('elements')
 	
 	def process(self, array):

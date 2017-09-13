@@ -296,7 +296,6 @@ class Graph(object):
 		'''
 		results = []
 		for sink in self.getSinks():
-			nodeName = self.nodeDict.keys()[self.nodes.index(sink)]
 			for output in sink.outputs:
-				results.append({'result': output.result, 'node': nodeName, 'output': output.name})
+				results.append({'result': output.result, 'node': sink.name, 'output': output.name})
 		return results

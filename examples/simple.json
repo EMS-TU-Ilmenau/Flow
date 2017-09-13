@@ -1,70 +1,70 @@
 {
+    "zoom": 1.4000000000000004,
     "nodes": {
         "Addition": {
+            "pos": [
+                342,
+                164
+            ],
+            "class": "operations.Add",
             "inputs": {
                 "a": {
-                    "default": null, 
+                    "default": null,
                     "connection": {
-                        "node": "Float out", 
+                        "node": "Float out",
                         "output": "float"
                     }
-                }, 
+                },
                 "b": {
-                    "default": null, 
+                    "default": null,
                     "connection": {
-                        "node": "Float out.1", 
+                        "node": "Float out.1",
                         "output": "float"
                     }
                 }
-            }, 
+            }
+        },
+        "Float out": {
             "pos": [
-                294, 
-                150
-            ], 
-            "class": "operations.Add"
-        }, 
-        "Float out.2": {
+                132,
+                100
+            ],
+            "class": "sources.FloatSource",
             "inputs": {
                 "value": {
-                    "default": 0.0, 
+                    "default": 41.0,
+                    "connection": null
+                }
+            }
+        },
+        "Float out.1": {
+            "pos": [
+                137,
+                265
+            ],
+            "class": "sources.FloatSource",
+            "inputs": {
+                "value": {
+                    "default": 1.0,
+                    "connection": null
+                }
+            }
+        },
+        "Float out.2": {
+            "pos": [
+                540,
+                146
+            ],
+            "class": "sources.FloatSource",
+            "inputs": {
+                "value": {
+                    "default": 0.0,
                     "connection": {
-                        "node": "Addition", 
+                        "node": "Addition",
                         "output": "c"
                     }
                 }
-            }, 
-            "pos": [
-                522, 
-                136
-            ], 
-            "class": "sources.FloatSource"
-        }, 
-        "Float out.1": {
-            "inputs": {
-                "value": {
-                    "default": 1.0, 
-                    "connection": null
-                }
-            }, 
-            "pos": [
-                81, 
-                255
-            ], 
-            "class": "sources.FloatSource"
-        }, 
-        "Float out": {
-            "inputs": {
-                "value": {
-                    "default": 41.0, 
-                    "connection": null
-                }
-            }, 
-            "pos": [
-                80, 
-                82
-            ], 
-            "class": "sources.FloatSource"
+            }
         }
-    }, 
-    "zoom": 1.4000000000000004
+    }
 }

@@ -1,4 +1,4 @@
-from flow.node import Node
+from flow.node import Node, ptype
 
 class Print(Node):
 	'''Formats input data as string'''
@@ -6,7 +6,7 @@ class Print(Node):
 	def __init__(self):
 		super(Print, self).__init__('Print')
 		self.addInput('data')
-		self.strOut = self.addOutput('formatted', str)
+		self.strOut = self.addOutput('formatted', ptype.STR)
 	
 	def process(self, data):
 		self.strOut.push('{}'.format(data))
@@ -18,10 +18,10 @@ class FileSink(Node):
 	def __init__(self):
 		super(FileSink, self).__init__('File sink')
 		self.addInput('data')
-		self.addInput('filepath', 'C:/Users/Klaus/Documents/ToDoList.txt', dtype=file)
+		self.addInput('filepath', '/Path/To/File.suffix', type=ptype.FILE)
 		self.addInput('lines', True) # adding linefeed or not
 		# only technical needed to have a result value (the path when finished)
-		self.pathOut = self.addOutput('filepath', str)
+		self.pathOut = self.addOutput('filepath', ptype.STR)
 		
 		self.file = None
 	

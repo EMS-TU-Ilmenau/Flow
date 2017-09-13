@@ -1,2 +1,2 @@
-import wurst
-import deeper
+from . import wurst
+from . import deeper

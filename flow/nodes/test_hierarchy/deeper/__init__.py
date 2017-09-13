@@ -1,1 +1,1 @@
-import kaese
+from . import kaese

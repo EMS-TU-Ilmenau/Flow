@@ -8,13 +8,11 @@ Niklas Beuster -- niklas.beuster@tu-ilmenau.de
 ![Showcase](Showcase.png)
 
 ## Getting started
-[Note! Only Python 2.7 supported by now, but you may try anyway]
-
 Clone the repository and change to that directory. 
-Install the package using `pip install .`.
+Install the package using `pip install .`
 
 #### Backend
-To test the backend without the GUI, open a python runtime or write a script and type:
+To test the backend ([graph](flow/graph.py) and [node](flow/node.py)) without the GUI, open a python runtime or write a script and type:
 
 ```python
 from flow import Graph
@@ -32,19 +30,36 @@ logging.basicConfig(filename='example.log', filemode='w', level=logging.DEBUG)
 ```
 
 #### GUI
-To use the GUI, type:
+To use the [GUI](flow/gui.py), type:
 
 ```python
 from flow import gui
 gui.startApp()
 ```
 
-Open and save graphs using the File menu.
-You can add nodes by right-clicking on the dark background and choose a node from the tree.
+Open and save graphs using the **File menu**.
+You can add nodes by **right-clicking** on the dark background and choose a node from the tree.
+**Scroll** on the dark background to navigate in the graph.
 Add more nodes and connect them or test what happens when you just hit the **run** button (the triangle without the pipe).
 When something seems broken, click the **step** button (triangle with pipe) to stop and step through the graph.
 You can click the **log** button (the bug) and step or run again to get detailed informations.
 You can reset or clear a graph using the other buttons.
+
+#### Porttypes
+The port types are just a rough orientation for the user when to connect nodes.
+Knowing if nodes can connect beforehand is impossible because beside the datatype, there would be other conditions why data could be incompatible, e.g. length of an vector, shape of tensors, etc.
+It would also be too restrictive to allow only same datatypes to connect, because a node could iterate over tuples and lists just fine for example.
+
+What they **do**:
+- Specify the port [color](flow/gui.py)
+- Defines the GUI widgets as an interface for the user to input default values
+	- For `float` and `int`, the user can click and **drag** the inputs title to enter values more convenient
+	- For `file`, the user can **left** click for an open file dialog and **right** click for a save file dialog
+	- For `bool`, there is a checkbox
+- Warn the user when connecting port of different type
+
+What they do **not**:
+- Care about incompatible data processing
 
 
 ## Making a new node
@@ -52,15 +67,17 @@ You can either add a new node to an existing module or even create your own modu
 Either case, writing a new node class is the same:
 
 ```python
+from flow.node import Node, ptype
+
 class MyNode(Node):
 	def __init__(self):
 		super(MyNode, self).__init__('My nodes name')
 		# add some inputs, but at least 1
 		self.addInput('someInput') # no spaces allowed for input names
-		self.addInput('other', 3.0) # default defines datatype automatically
-		self.addInput('bla', dtype=bool) # no default, but datatype specified
+		self.addInput('other', 3.0) # default defines porttype automatically
+		self.addInput('bla', type=ptype.BOOL) # no default, but type specified
 		# add some outputs, but at least 1
-		self.myOut = self.addOutput('out', str) # string datatype specified
+		self.myOut = self.addOutput('out', ptype.STR) # string type specified
 	
 	def process(self, someInput, other, bla):
 		# process inputs
@@ -80,11 +97,11 @@ As you can see, there are even subdirectories, which can contain modules, and ot
 
 Let's say we want to make a module `my_fancy_nodes.py` with its own subdirectory `my_fancy_lib` in the root:
 - Create a folder in `nodes`and name it `my_fancy_lib`.
-- Open the `__init__.py` file in the root and add `import my_fancy_lib` to the end. Save, close.
+- Open the `__init__.py` file in the root and add `from . import my_fancy_lib` to the end. Save, close.
 - Enter the newly created folder and create a file named `my_fancy_nodes.py`
-- Open the file and write `from flow.node import Node`, then write your node class as described above. Save, close.
+- Open the file and write `from flow.node import Node, ptype`, then add your node class as described above. Save, close.
 - Create a `__init__.py` file in the same folder.
-- Open the file and write `import my_fancy_nodes.py`. Save, close.
+- Open the file and write `from . import my_fancy_nodes.py`. Save, close.
 
 That's it.
 

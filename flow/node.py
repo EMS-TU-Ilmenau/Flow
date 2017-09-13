@@ -2,6 +2,36 @@ import logging # for debugging the dataflow
 
 log = logging.getLogger(__name__)
 
+class ptype(object):
+	'''Input and output port type identifiers
+	'''
+	OBJECT = 0 # generic/default
+	BOOL = 1
+	INT = 2
+	FLOAT = 3
+	COMPLEX = 4
+	LIST = 5
+	TUPLE = 6
+	STR = 7
+	FILE = 8
+	
+	@classmethod
+	def fromObj(cls, obj):
+		'''Checks if obj can be recognized as one of the port types 
+		and returns porttype identifier.'''
+		# common types. Make sure they exist in both Python versions!
+		commonTypes = {
+			bool: cls.BOOL, 
+			int: cls.INT, 
+			float: cls.FLOAT, 
+			complex: cls.COMPLEX, 
+			list: cls.LIST, 
+			tuple: cls.TUPLE, 
+			str: cls.STR, 
+		}
+		# return best match for the objects type
+		return commonTypes.get(type(obj), cls.OBJECT)
+
 class Node(object):
 	'''Base node class.
 	May be configured to have arbitrary number of inputs and outputs.
@@ -98,11 +128,11 @@ class InputPort(object):
 	or from default values.
 	'''
 	
-	def __init__(self, node, name='Input', default=None, dtype=object):
+	def __init__(self, node, name='Input', default=None, type=ptype.OBJECT):
 		''':param node: the node this port belongs to
 		:param name: string name for this input. NO SPACES ALLOWED!!!
 		:param default: value used in case no data can be pulled
-		:param dtype: data type
+		:param type: data type identifier (see ptype)
 		'''
 		self.default = default
 		self.connOutput = None # the output of the connected node
@@ -112,10 +142,10 @@ class InputPort(object):
 		self.name = name
 		self.node = node
 		# auto assign data type
-		if default is not None and dtype is object:
-			self.dtype = type(default)
+		if default is not None and type is ptype.OBJECT:
+			self.type = ptype.fromObj(default)
 		else:
-			self.dtype = dtype
+			self.type = type
 	
 	def connect(self, output):
 		''':param output: output port of a node to connect to'''
@@ -171,23 +201,23 @@ class OutputPort(object):
 	Holds connected node inputs and can connect and disconnect
 	'''
 	
-	def __init__(self, node, name='Output', dtype=object):
+	def __init__(self, node, name='Output', type=ptype.OBJECT):
 		''':param node: the node this port belongs to
 		:param name: string name for this output. NO SPACES ALLOWED!!!
-		:param dtype: data type
+		:param type: data type identifier
 		'''
 		self.connInputs = [] # list of inputs from connected nodes
 		self.result = None # should be used to catch final results for sink ports
 		self.name = name
 		self.node = node
-		self.dtype = dtype
+		self.type = type
 	
 	def connect(self, input):
 		''':param input: input port of a node to connect to'''
 		# check for datatype (probably just causes trouble (e.g. tuple vs. list))
-		if not (input.dtype is self.dtype or input.dtype is object or self.dtype is object):
-			logging.warning('{}.{} {} might be incompatible with {}.{} {}'.format(
-				self.node.name, self.name, self.dtype, input.node.name, input.name, input.dtype))
+		if not (input.type is self.type or input.type is ptype.OBJECT or self.type is ptype.OBJECT):
+			logging.warning('Type of {}.{} might be incompatible with {}.{}'.format(
+				self.node.name, self.name, input.node.name, input.name))
 		# detach old connection of target input
 		input.disconnect()
 		# connect to input
