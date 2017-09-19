@@ -9,10 +9,11 @@ Niklas Beuster -- niklas.beuster@tu-ilmenau.de
 
 ## Getting started
 Clone the repository and change to that directory. 
-Install the package using `pip install .`
+
+Optionally, install the package using `pip install .` or `pip install --user .`
 
 #### Backend
-To test the backend ([graph](flow/graph.py) and [node](flow/node.py)) without the GUI, open a python runtime or write a script and type:
+To test the backend ([graph](flow/graph.py) and [node](flow/node.py)) without the GUI, run the following Python code:
 
 ```python
 from flow import Graph
@@ -30,7 +31,7 @@ logging.basicConfig(filename='example.log', filemode='w', level=logging.DEBUG)
 ```
 
 #### GUI
-To use the [GUI](flow/gui.py), type:
+To use the [GUI](flow/gui.py):
 
 ```python
 from flow import gui
@@ -54,7 +55,7 @@ What they **do**:
 - Specify the port [color](flow/gui.py)
 - Defines the GUI widgets as an interface for the user to input default values
 	- For `float` and `int`, the user can click and **drag** the inputs title to enter values more convenient
-	- For `file`, the user can **left** click for an open file dialog and **right** click for a save file dialog
+	- For `file`, the user can **left-click** for an open file dialog and **right-click** for a save file dialog
 	- For `bool`, there is a checkbox
 - Warn the user when connecting port of different type
 
@@ -86,8 +87,11 @@ class MyNode(Node):
 		self.myOut.push(result)
 ```
 
-As you can see, only the most essential things have to be programmed by a developer.
-To get a feeling for developing nodes and adding your class to a module, have a look at the already existing [nodes](flow/nodes/).
+You may also have a look at the already existing [nodes](flow/nodes/).
+
+Note that in order to load the node in the GUI, two things are of importance:
+- the line `super(MyNode, self).__init__('My nodes name')` (you can use single or double quotes for the name)
+- the class needs to be importable from the [nodes](flow/nodes/) directory in the package.
 
 #### Make a new module
 When making a bunch of new node classes that are needed in a specific field (e.g. plotting, signal processing, device controls, ...) it is a good idea to make a new module.
@@ -95,7 +99,7 @@ When making a bunch of new node classes that are needed in a specific field (e.g
 The root of all node modules is [nodes](flow/nodes/).
 As you can see, there are even subdirectories, which can contain modules, and other subdirectories, to specialize even further.
 
-Let's say we want to make a module `my_fancy_nodes.py` with its own subdirectory `my_fancy_lib` in the root:
+Let's say we want to make a module `my_fancy_nodes.py` in its own subdirectory `my_fancy_lib`:
 - Create a folder in `nodes`and name it `my_fancy_lib`.
 - Open the `__init__.py` file in the root and add `from . import my_fancy_lib` to the end. Save, close.
 - Enter the newly created folder and create a file named `my_fancy_nodes.py`
@@ -103,7 +107,7 @@ Let's say we want to make a module `my_fancy_nodes.py` with its own subdirectory
 - Create a `__init__.py` file in the same folder.
 - Open the file and write `from . import my_fancy_nodes.py`. Save, close.
 
-That's it.
+That's it. The GUI will automatically recognize the new module and all node classes inside when started.
 
 ### Concept
 The general concept is called **flow based programming** (FBP). 
@@ -144,3 +148,16 @@ The above problem could only be solved by restricting the graph to only process 
 When multiple outputs pull from the same source, which would change its data, data is not synchronized anymore.
 Imagine a node generating a random sample on each pull request.
 When multiple connected nodes pull from that noise-generator, the data is not synchronized.
+
+## Todo/discussion
+
+### Third party packages
+The project is very generic, as any python code can be inside the node.
+That means one could use the node editor primarily for signal processing, while someone else might use it for device controls/measurements or image processing as e.g. in Blender.
+Most nodes will probably be just interfaces for already existing, mighty functions or classes from third party packages like fastmat, numpy or matplotlib.
+
+That means a lot of third party code to install, which might not be needed for the other fields.
+Therefore, we need some sort of node-plugin-manager thing.
+
+Alternatively, the core (graph.py, node.py) of the project could be added as a git subproject for each specialization.
+The GUI could select the now newly developed nodes folder(s) to choose a library of nodes.
