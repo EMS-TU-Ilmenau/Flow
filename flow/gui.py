@@ -759,7 +759,8 @@ class FlowApp(object):
 					graphDict = json.loads(file.read()) # read file content as dict
 					self.graphEditor.fromDict(graphDict)
 				except:
-					logging.exception('Opening graph failed')
+					logging.exception('Opening graph file failed') # with traceback
+					logging.error('Not a valid graph file') # visible for the user
 	
 	def onSave(self):
 		'''Saves the current graph as a json encoded file.'''
