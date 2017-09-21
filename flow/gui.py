@@ -708,6 +708,7 @@ class FlowApp(object):
 	'''
 	def __init__(self):
 		self.root = tk.Tk()
+		self.root.protocol('WM_DELETE_WINDOW', self.onQuit) # window closing redirected to quit
 		self.step = 0 # for manual processing nodes step-by-step
 		self.graphStop = threading.Event() # for stopping the graph
 		self.graphThread = None
@@ -774,6 +775,12 @@ class FlowApp(object):
 				file.write(json.dumps(graphDict, indent=4))
 	
 	def onQuit(self):
+		# stop running graph
+		if self.graphThread and self.graphThread.is_alive():
+			self.graphStop.set()
+			logging.warning('The graph is still processing. Stopping it now')
+			return
+		# quit the application
 		self.root.quit()
 	
 	def addTool(self, icon, callback, side=tk.LEFT):
