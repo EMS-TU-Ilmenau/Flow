@@ -7,7 +7,7 @@ class UniformNoise(Node):
 	the Re and Im part of an complex input signal'''
 	def __init__(self):
 		super(UniformNoise, self).__init__('Uniform noise')
-		input = self.addInput('signal', 0+0j) # complex
+		input = self.addInput('signal', ptype.COMPLEX)
 		self.addInput('lower', -1.)
 		self.addInput('upper', 1.)
 		self.noiseOut = self.addOutput('noisy', input.type)
@@ -22,7 +22,7 @@ class GaussNoise(Node):
 	the Re and Im part of an complex input signal'''
 	def __init__(self):
 		super(GaussNoise, self).__init__('Gauss noise')
-		input = self.addInput('signal', 0+0j)
+		input = self.addInput('signal', ptype.COMPLEX)
 		self.addInput('sigma', 1.)
 		self.noiseOut = self.addOutput('noisy', input.type)
 	
