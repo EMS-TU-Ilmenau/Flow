@@ -466,12 +466,15 @@ class GraphEditor(object):
 	
 	def onConnDragging(self, e):
 		'''Fires when mouse is pressed and moved globally'''
-		widget = self.bg.winfo_containing(e.x_root, e.y_root)
-		# get latest possible drop target
-		self.dropPort = getattr(widget, 'input', None)
-		self.dropPort = getattr(widget, 'output', self.dropPort)
-		# update visual connections
-		self.drawConns()
+		try:
+			widget = self.bg.winfo_containing(e.x_root, e.y_root)
+			# get latest possible drop target
+			self.dropPort = getattr(widget, 'input', None)
+			self.dropPort = getattr(widget, 'output', self.dropPort)
+			# update visual connections
+			self.drawConns()
+		except:
+			pass # because errors on Linux when clicking on the toolbar
 	
 	def onConnDrop(self, e):
 		'''must handle connection here instead on the ports directly 
@@ -733,7 +736,7 @@ class FlowApp(object):
 				self.root.mainloop()
 				break
 			except UnicodeDecodeError:
-				pass # because python3 bug
+				pass # because fast scrolling in python3 on macOS
 	
 	def makeMenubar(self):
 		'''Creates the menubar with a file menu for saving and opening a graph'''
