@@ -22,7 +22,8 @@ class FileSink(Node):
 		self.addInput('lines', True) # adding linefeed or not
 		# only technical needed to have a result value (the path when finished)
 		self.pathOut = self.addOutput('filepath', ptype.STR)
-		
+		# for faster processing, we let the file object open until the graph finished.
+		# alternatively, open and close it in the process method, using "with"
 		self.file = None
 	
 	def process(self, data, filepath, lines):
@@ -33,5 +34,7 @@ class FileSink(Node):
 		self.pathOut.push(filepath)
 	
 	def finish(self):
-		self.file.close()
-		self.file = None
+		if self.file:
+			# close the file when graph finished
+			self.file.close()
+			self.file = None
