@@ -314,10 +314,10 @@ class GraphEditor(object):
 		self.curZoom = 1.0
 		self.lastZoom = self.curZoom
 		# Windows and macOS
-		self.bg.bind('<MouseWheel>', self.onScroll)
+		self.app.root.bind('<MouseWheel>', self.onScroll)
 		# Linux
-		self.bg.bind('<Button-4>', self.onScroll)
-		self.bg.bind('<Button-5>', self.onScroll)
+		self.app.root.bind('<Button-4>', self.onScroll)
+		self.app.root.bind('<Button-5>', self.onScroll)
 		
 		# setup connections
 		self.dropTarget = None
