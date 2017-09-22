@@ -87,9 +87,11 @@ class MyNode(Node):
 		self.myOut.push(result)
 ```
 
+Note that only **(JSON)[https://www.w3schools.com/js/js_json_datatypes.asp] compatible default values** must be passed! 
+For other porttypes, like COMPLEX, just pass the type=ptype.COMPLEX argument. 
 You may also have a look at the already existing [nodes](flow/nodes/).
 
-Note that in order to load the node in the GUI, two things are of importance:
+In order to load the node in the GUI, two things are of importance:
 - the line `super(MyNode, self).__init__('My nodes name')` (you can use single or double quotes for the name)
 - the class needs to be importable from the [nodes](flow/nodes/) directory in the package.
 
