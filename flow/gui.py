@@ -827,9 +827,11 @@ class FlowApp(object):
 	
 	def _graphRun(self, stopper):
 		try:
+			self.stats.set('processing...')
 			results, iterCount, iterTime = self.graphEditor.graph.process(stopper)
 			self.stats.set('{} | {:.2f} ms'.format(iterCount, 1e3*iterTime))
 		except:
+			self.stats.set('')
 			logging.exception('Graph processing failed')
 		self.graphEditor.updateResults() # update visual results
 		self.logHandler.tail()
