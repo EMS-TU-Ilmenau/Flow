@@ -13,30 +13,14 @@ Clone the repository and change to that directory.
 Optionally, install the package using `pip install .` or `pip install --user .`
 
 #### Backend
-To test the backend ([graph](flow/graph.py) and [node](flow/node.py)) without the GUI, run the following Python code:
+To use the backend ([graph](flow/graph.py) and [node](flow/node.py)) without the GUI, run [test_graph.py](test_graph.py) with a graph file as argument:
 
-```python
-from flow import Graph
-
-graph = Graph('examples/loop.json')
-results, iterCount, iterTime = graph.process()
-print(results)
-```
-
-If something seems broken, you may add a log before:
-
-```python
-import logging
-logging.basicConfig(filename='example.log', filemode='w', level=logging.DEBUG)
-```
+`python test_graph.py examples/loop.json`
 
 #### GUI
-To use the [GUI](flow/gui.py):
+To use the [GUI](flow/gui.py), run [test_gui.py](test_gui.py):
 
-```python
-from flow import gui
-gui.startApp()
-```
+`python test_gui.py`
 
 Open and save graphs using the **File menu**.
 You can add nodes by **right-clicking** on the dark background and choose a node from the tree.
@@ -87,8 +71,8 @@ class MyNode(Node):
 		self.myOut.push(result)
 ```
 
-Note that only **(JSON)[https://www.w3schools.com/js/js_json_datatypes.asp] compatible default values** must be passed! 
-For other porttypes, like COMPLEX, just pass the type=ptype.COMPLEX argument. 
+Note that only **[JSON](https://www.w3schools.com/js/js_json_datatypes.asp) compatible default values** must be passed! 
+For other porttypes, specify the `type` argument, e.g. type=ptype.COMPLEX. 
 You may also have a look at the already existing [nodes](flow/nodes/).
 
 In order to load the node in the GUI, two things are of importance:
@@ -111,7 +95,7 @@ Let's say we want to make a module `my_fancy_nodes.py` in its own subdirectory `
 
 That's it. The GUI will automatically recognize the new module and all node classes inside when started.
 
-### Concept
+## Concept
 The general concept is called **flow based programming** (FBP). 
 It allows to handle data as if they are signals in the real world by connecting **inputs** and **outputs** of **nodes** together in a **graph**, like connecting devices via cables. 
 This makes it intuitive for an end-user to build algorithms without programming. 
@@ -151,15 +135,12 @@ When multiple outputs pull from the same source, which would change its data, da
 Imagine a node generating a random sample on each pull request.
 When multiple connected nodes pull from that noise-generator, the data is not synchronized.
 
-## Todo/discussion
-
-### Third party packages
+## Third party packages
 The project is very generic, as any python code can be inside the node.
 That means one could use the node editor primarily for signal processing, while someone else might use it for device controls/measurements or image processing as e.g. in Blender.
 Most nodes will probably be just interfaces for already existing, mighty functions or classes from third party packages like fastmat, numpy or matplotlib.
-
 That means a lot of third party code to install, which might not be needed for the other fields.
-Therefore, we need some sort of node-plugin-manager thing.
 
-Alternatively, the core (graph.py, node.py) of the project could be added as a git subproject for each specialization.
-The GUI could select the now newly developed nodes folder(s) to choose a library of nodes.
+Therefore, only generic and standard library only nodes should be pushed to this project if any.
+The existing nodes are merely examples and for demonstration purposes.
+For real applications as described above, get a clone of this project and build your own nodes.
