@@ -37,18 +37,3 @@ class Div(Operation):
 	
 	def process(self, a, b):
 		self.res.push(a/b)
-
-class CustomOp(Operation):
-	'''A custom operation with the inputs "a" and "b" can be entered in the string input.
-	Also python math operations are allowed with leading "math."
-	'''
-	def __init__(self):
-		super(CustomOp, self).__init__('Custom operation')
-		# build additional input
-		self.addInput('operation', '(a*b)/(a+b)') # default/example custom operation
-		# import math module for more powerful operations
-		import math
-	
-	def process(self, a, b, operation):
-		exec('result = '+operation)
-		self.res.push(result)
