@@ -8,6 +8,7 @@ import re # for matching and extracting string pattern
 import json # for parsing JSON formatted graph files
 import logging # for debugging and warning user
 import threading # for making graph processing non-blocking
+import importlib # for importing nodes submodules
 try:
 	# for python 2
 	import Tkinter as tk # for building the gui
@@ -376,9 +377,14 @@ class GraphEditor(object):
 		'''Instantiates a node in the graph.
 		:param classPath: class import path relative to "flow.nodes"
 		:param spawnPos: Point position where the node is placed'''
-		namespace = {'nodes': nodes} # because python3
-		exec('node = nodes.{}()'.format(classPath), namespace)
-		node = namespace['node']
+		# get module/class seperator
+		sep = classPath.rfind('.')
+		pkgName = __name__.split('.')[0] # package name
+		# instantiate node
+		NodeClass = getattr(
+			importlib.import_module('{}.nodes.{}'.format(pkgName, classPath[:sep])), 
+			classPath[sep+1:])
+		node = NodeClass()
 		node.classPath = classPath # remember origin for saving graph
 		# place node visual on panel
 		pos = spawnPos or self.spawnPos
