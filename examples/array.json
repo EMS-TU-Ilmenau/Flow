@@ -14,7 +14,7 @@
                 645, 
                 100
             ], 
-            "class": "sinks.Print"
+            "class": "flow.nodes.sinks.Print"
         }, 
         "Range out": {
             "inputs": {
@@ -35,7 +35,7 @@
                 59, 
                 126
             ], 
-            "class": "sources.RangeSource"
+            "class": "flow.nodes.sources.RangeSource"
         }, 
         "Unpack array": {
             "inputs": {
@@ -51,7 +51,7 @@
                 248, 
                 176
             ], 
-            "class": "utility.UnpackArray"
+            "class": "flow.nodes.utility.UnpackArray"
         }, 
         "Pack array": {
             "inputs": {
@@ -71,7 +71,7 @@
                 452, 
                 105
             ], 
-            "class": "utility.PackArray"
+            "class": "flow.nodes.utility.PackArray"
         }, 
         "Pack array.1": {
             "inputs": {
@@ -91,7 +91,7 @@
                 630, 
                 221
             ], 
-            "class": "utility.PackArray"
+            "class": "flow.nodes.utility.PackArray"
         }
     }, 
     "zoom": 1.3000000000000003

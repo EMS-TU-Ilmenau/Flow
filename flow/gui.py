@@ -3,12 +3,12 @@
 from .graph import Graph # for building the flow graph
 from .node import ptype # for identifying port data types
 from . import nodes # the node database
-import os, fnmatch # for scanning the submodules for node classes
-import re # for matching and extracting string pattern
+import os # for making icon file path to load icons in package
 import json # for parsing JSON formatted graph files
 import logging # for debugging and warning user
 import threading # for making graph processing non-blocking
-import importlib # for importing nodes submodules
+import inspect # for walking the node modules
+import importlib # for importing nodes
 try:
 	# for python 2
 	import Tkinter as tk # for building the gui
@@ -375,22 +375,25 @@ class GraphEditor(object):
 	
 	def spawnNode(self, classPath, spawnPos=None):
 		'''Instantiates a node in the graph.
-		:param classPath: class import path relative to "flow.nodes"
+		:param classPath: class import path. E.g. "flow.nodes.sinks.Print"
 		:param spawnPos: Point position where the node is placed'''
 		# get module/class seperator
 		sep = classPath.rfind('.')
-		pkgName = __name__.split('.')[0] # package name
+		modName = classPath[:sep] # module name
+		clsName = classPath[sep+1:] # class name
 		# instantiate node
-		NodeClass = getattr(
-			importlib.import_module('{}.nodes.{}'.format(pkgName, classPath[:sep])), 
-			classPath[sep+1:])
-		node = NodeClass()
-		node.classPath = classPath # remember origin for saving graph
-		# place node visual on panel
-		pos = spawnPos or self.spawnPos
-		self.graph.addNode(node)
-		nodeVisual = NodeVisual(self, node, pos)
-		nodeVisual.setScale(self.curZoom)
+		mod = importlib.import_module(modName)
+		modMems = inspect.getmembers(mod)
+		for mem in modMems:
+			if mem[0] == clsName:
+				node = mem[1]()
+				node.classPath = classPath # remember origin for saving graph
+				# place node visual on panel
+				pos = spawnPos or self.spawnPos
+				self.graph.addNode(node)
+				nodeVisual = NodeVisual(self, node, pos)
+				nodeVisual.setScale(self.curZoom)
+				break
 	
 	def deleteNode(self, nodeName):
 		'''removes a node and its visual from the graph.
@@ -557,78 +560,45 @@ class NodeDatabase(object):
 	'''
 	def __init__(self, graphEditor):
 		self.graphEditor = graphEditor
-		
-		pkgPath = os.path.dirname(__file__)
-		nodesPath = os.path.abspath(os.path.join(pkgPath, 'nodes'))
-		# dictionary to track created menus for each path
 		self.menu = tk.Menu(self.graphEditor.bg)
-		menuDict = {nodesPath: self.menu}
-		# walk the hierarchy
-		for path, dirs, files in os.walk(nodesPath):
-			self.makeDirectoryMenu(menuDict, path, dirs, files)
+		self.pgkName = nodes.__name__
+		# walk the import hierarchy
+		self.makeNodeMenu(nodes, self.menu)
 		# for faster access, skip the first menu (contains only root as entry)
-		self.menu = list(menuDict[nodesPath].children.values())[0] # list because of python3
+		self.menu = list(self.menu.children.values())[0] # list because of python3
 	
-	def makeModuleMenu(self, parentMenu, filePath):
-		'''Makes a menu filled with menu items for each class in the module.
-		:param filePath: (absolute) module path
-		'''
-		modMenu = tk.Menu(parentMenu)
-		# make module path for importing
-		db = 'nodes' # folder in the package root where the node modules are
-		modPath = filePath[filePath.rfind(db)+len(db)+1:] # get relative path after "nodes"
-		modPath = modPath.replace('.py', '').replace(os.path.sep, '.')
-		# parse file
-		with open(filePath) as module:
-			for line in module.readlines():
-				# regex magic!
-				match = re.search(r'super\((.+), ?self\)\.__init__\([\'|"](.+)[\'|"]\)', line)
-				'''basically searches for:
-				super(NodeClass, self).__init__("NodeName")
-				with some extra care: 
-					- the space before self is optional
-					- the NodeName can be in single or double quotes'''
-				if match:
-					className = match.group(1)
-					nodeName = match.group(2)
-					classPath = '{}.{}'.format(modPath, className)
-					# add menu item
-					modMenu.add_command(label=nodeName, underline=0, 
-						command=lambda n=nodeName, p=classPath: self.onNodeClassSelect(p, n))
+	def makeNodeMenu(self, member, parentMenu):
+		'''Recursively calls to catch all nodes in the import hierarchy'''
+		# get import path (module) or class name (class)
+		memName = member.__name__ if hasattr(member, '__name__') else ''
 		
-		return modMenu
-	
-	def makeDirectoryMenu(self, menuDict, path, dirs, files):
-		'''Adds submenus for each module in a directory to 
-		an already created menu for that directory.
-		:param menuDict: dictionary with paths and associated menus
-		:param path: directory path
-		:param dirs: list of sub-directories in path
-		:param files: list of filenames in path
-		'''
-		if '__pycache__' in path:
-			return
-		dirMenu = menuDict[path]
-		subMenu = tk.Menu(dirMenu)
-		for filename in fnmatch.filter(files, '*.py'):
-			if '__init__' in filename:
-				continue # skip init files
-			filepath = os.path.join(path, filename)
-			# make a submenu for each module in path
-			modMenu = self.makeModuleMenu(subMenu, filepath)
-			subMenu.add_cascade(label=filename.replace('.py', '').replace('_', ' '), 
-				menu=modMenu, underline=0)
+		# member is a class
+		if inspect.isclass(member) and self.pgkName in member.__module__:
+			# get node name because it looks nicer than the class name (it should!)
+			itemName = ''
+			for srcLine in inspect.getsourcelines(member)[0]:
+				if '__init__(\'' in srcLine:
+					itemName = srcLine.split('\'')[1]
+				elif '__init__(\"' in srcLine:
+					itemName = srcLine.split('\"')[1]
+			if not itemName:
+				return
+			# make menu item
+			parentMenu.add_command(label=itemName, underline=0, 
+				command=lambda p='{}.{}'.format(parentMenu.path, memName): 
+				self.graphEditor.spawnNode(p))
 		
-		# append submenu to parent menu
-		subName = os.path.split(path)[-1]
-		dirMenu.add_cascade(label=subName, menu=subMenu, underline=0)
-		
-		# link menus for next layer
-		for dir in dirs:
-			menuDict[os.path.join(path, dir)] = subMenu
-		
-	def onNodeClassSelect(self, path, name):
-		self.graphEditor.spawnNode(path)
+		# member is another module
+		if inspect.ismodule(member) and self.pgkName in memName:
+			# make menu item
+			memMenu = tk.Menu(parentMenu)
+			memMenu.path = memName
+			itemName = memName.replace('_', ' ').split('.')[-1]
+			parentMenu.add_cascade(label=itemName, menu=memMenu, underline=0)
+			# call for each sub-member
+			subMems = inspect.getmembers(member)
+			for mem in subMems:
+				self.makeNodeMenu(mem[1], memMenu)
 
 
 class LogHandler(object):

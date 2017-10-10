@@ -6,7 +6,7 @@
                 342,
                 164
             ],
-            "class": "operations.Add",
+            "class": "flow.nodes.operations.Add",
             "inputs": {
                 "a": {
                     "default": null,
@@ -29,7 +29,7 @@
                 132,
                 100
             ],
-            "class": "sources.FloatSource",
+            "class": "flow.nodes.sources.FloatSource",
             "inputs": {
                 "value": {
                     "default": 41.0,
@@ -42,7 +42,7 @@
                 137,
                 265
             ],
-            "class": "sources.FloatSource",
+            "class": "flow.nodes.sources.FloatSource",
             "inputs": {
                 "value": {
                     "default": 1.0,
@@ -55,7 +55,7 @@
                 540,
                 146
             ],
-            "class": "sources.FloatSource",
+            "class": "flow.nodes.sources.FloatSource",
             "inputs": {
                 "value": {
                     "default": 0.0,

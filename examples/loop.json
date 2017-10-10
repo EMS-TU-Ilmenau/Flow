@@ -11,7 +11,7 @@
                 114, 
                 130
             ], 
-            "class": "sources.IntegerSource"
+            "class": "flow.nodes.sources.IntegerSource"
         }, 
         "Int out.1": {
             "inputs": {
@@ -27,7 +27,7 @@
                 292, 
                 328
             ], 
-            "class": "sources.IntegerSource"
+            "class": "flow.nodes.sources.IntegerSource"
         }, 
         "Print": {
             "inputs": {
@@ -43,7 +43,7 @@
                 707, 
                 272
             ], 
-            "class": "sinks.Print"
+            "class": "flow.nodes.sinks.Print"
         }, 
         "Replicate": {
             "inputs": {
@@ -63,7 +63,7 @@
                 271, 
                 134
             ], 
-            "class": "utility.Replicate"
+            "class": "flow.nodes.utility.Replicate"
         }, 
         "Multiplication": {
             "inputs": {
@@ -86,7 +86,7 @@
                 469, 
                 162
             ], 
-            "class": "operations.Mul"
+            "class": "flow.nodes.operations.Mul"
         }
     }, 
     "zoom": 1.5000000000000004
