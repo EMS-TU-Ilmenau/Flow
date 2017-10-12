@@ -60,12 +60,18 @@ class RangeSource(Node):
 		self.arrOut = self.addOutput('array', ptype.LIST)
 		self.lenOut = self.addOutput('length', ptype.INT)
 	
-	def seq(start, stop, step=1):
-		n = int(round((stop-start)/float(step)))
+	def seq(self, start, stop, step=1):
+		# sanity checks
+		if stop < start and step > 0:
+			return []
+		if stop > start and step < 0:
+			return []
+		# make array
+		n = abs(int(round((stop-start)/float(step))))
 		if n > 1:
-			return([start + step*i for i in range(n+1)])
+			return [start + step*i for i in range(n+1)]
 		else:
-			return([])
+			return []
 	
 	def process(self, start, step, stop):
 		arr = self.seq(start, stop, step)
