@@ -2,6 +2,7 @@ from . import nodes # for instantiating nodes
 import json # for parsing JSON formatted graph files
 import time # for measuring processing time
 import logging # for debugging the dataflow
+import importlib, inspect # for instantiating nodes from class path
 
 log = logging.getLogger(__name__)
 
@@ -108,7 +109,19 @@ class Graph(object):
 		
 		# instantiate nodes from class
 		for nodeEntry in graphDict['nodes'].values():
-			exec('self.addNode(nodes.{}())'.format(nodeEntry['class']))
+			classPath = nodeEntry['class']
+			# get module/class seperator
+			sep = classPath.rfind('.')
+			modName = classPath[:sep] # module name
+			clsName = classPath[sep+1:] # class name
+			# instantiate node
+			mod = importlib.import_module(modName)
+			modMems = inspect.getmembers(mod)
+			for mem in modMems:
+				if mem[0] == clsName:
+					node = mem[1]()
+					self.addNode(node)
+					break
 		
 		# go through a second time to update default and connect
 		for nodeName, nodeEntry in graphDict['nodes'].items():
