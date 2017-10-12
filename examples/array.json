@@ -16,7 +16,7 @@
             ], 
             "class": "flow.nodes.sinks.Print"
         }, 
-        "Range out": {
+        "Int range out": {
             "inputs": {
                 "start": {
                     "default": 1, 
@@ -42,7 +42,7 @@
                 "array": {
                     "default": null, 
                     "connection": {
-                        "node": "Range out", 
+                        "node": "Int range out", 
                         "output": "array"
                     }
                 }
