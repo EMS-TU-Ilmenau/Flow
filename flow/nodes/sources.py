@@ -10,7 +10,7 @@ class IntegerSource(Node):
 		self.srcOut = self.addOutput('int', input.type)
 	
 	def process(self, value):
-		self.srcOut.push(value)
+		self.srcOut.push(int(value))
 
 class FloatSource(Node):
 	'''Provides a float number on its output'''
@@ -20,7 +20,7 @@ class FloatSource(Node):
 		self.srcOut = self.addOutput('float', input.type)
 	
 	def process(self, value):
-		self.srcOut.push(value)
+		self.srcOut.push(float(value))
 
 class BooleanSource(Node):
 	'''Provides a bool value on its output'''
@@ -40,7 +40,7 @@ class StringSource(Node):
 		self.srcOut = self.addOutput('bool', input.type)
 	
 	def process(self, value):
-		self.srcOut.push(value)
+		self.srcOut.push(str(value))
 
 class ComplexSource(Node):
 	'''Provides a complex number on its output'''
@@ -54,19 +54,39 @@ class ComplexSource(Node):
 		self.complexOut.push(complex(re, im))
 
 class RangeSource(Node):
-	'''Provides a range array and its length on the outputs'''
-	def __init__(self):
-		super(RangeSource, self).__init__('Range out')
-		self.addInput('start', 1)
-		self.addInput('step', 1)
-		self.addInput('stop', 10)
+	'''Abstract class for range sources'''
+	def __init__(self, name):
+		super(RangeSource, self).__init__(name)
 		self.arrOut = self.addOutput('array', ptype.LIST)
 		self.lenOut = self.addOutput('length', ptype.INT)
 	
+	def seq(start, stop, step=1):
+		n = int(round((stop-start)/float(step)))
+		if n > 1:
+			return([start + step*i for i in range(n+1)])
+		else:
+			return([])
+	
 	def process(self, start, step, stop):
-		arr = list(range(start, stop+1, step))
+		arr = self.seq(start, stop, step)
 		self.arrOut.push(arr)
 		self.lenOut.push(len(arr))
+
+class IntegerRangeSource(RangeSource):
+	'''Provides an int range array and its length on the outputs'''
+	def __init__(self):
+		super(IntegerRangeSource, self).__init__('Int range out')
+		self.addInput('start', 1)
+		self.addInput('step', 1)
+		self.addInput('stop', 10)
+
+class FloatRangeSource(RangeSource):
+	'''Provides a float range array and its length on the outputs'''
+	def __init__(self):
+		super(FloatRangeSource, self).__init__('Float range out')
+		self.addInput('start', 0.)
+		self.addInput('step', 0.1)
+		self.addInput('stop', 1.)
 
 class FileSource(Node):
 	'''Reads lines from a file specified by a path string 

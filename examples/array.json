@@ -35,7 +35,7 @@
                 59, 
                 126
             ], 
-            "class": "flow.nodes.sources.RangeSource"
+            "class": "flow.nodes.sources.IntegerRangeSource"
         }, 
         "Unpack array": {
             "inputs": {
