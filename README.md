@@ -147,12 +147,15 @@ The existing nodes are merely examples and for demonstration purposes.
 For real applications, proceed as follow:
 - Install this project using `pip install .` or `pip install --user .` after `cd` to the cloned project
 - In your own project (the real application), make sure the minial file structure is as follows:
-	- your_project
-		- __init__.py (can be empty)
-		- external_nodes/ (exactly this name! Can be layout like [nodes](flow/nodes/) inside)
-			- __init__.py (must import your node modules)
-			- [your node modules]
-		- start_gui.py (can be any name, this is your GUI starter)
+
+```
+- your_project
+	- __init__.py (can be empty)
+	- external_nodes/ (exactly this name! Can be layout like [nodes](flow/nodes/) inside)
+		- __init__.py (must import your node modules)
+		- [your node modules]
+	- start_gui.py (can be any name, this is your GUI starter)
+```
 
 In your GUI starter, you need at least this code:
 
