@@ -836,7 +836,7 @@ class FlowApp(object):
 			return
 		
 		if not self.graphEditor.graph.nodesRunOrder:
-			self.graphEditor.graph.prepare()
+			self.onReset()
 		runOrder = self.graphEditor.graph.nodesRunOrder
 		# get last processed node to reset highlight
 		if self.step > 0:
@@ -861,7 +861,10 @@ class FlowApp(object):
 		
 		self.logHandler.clear() # clear log
 		self.stats.set('')
-		self.graphEditor.graph.prepare()
+		try:
+			self.graphEditor.graph.prepare()
+		except:
+			logging.exception('Preparing graph failed')
 		self.graphEditor.updateResults()
 		# reset stepping
 		for node in self.graphEditor.graph.nodes:
