@@ -561,19 +561,26 @@ class NodeDatabase(object):
 	def __init__(self, graphEditor):
 		self.graphEditor = graphEditor
 		self.menu = tk.Menu(self.graphEditor.bg)
-		self.pgkName = nodes.__name__
-		# walk the import hierarchy
-		self.makeNodeMenu(nodes, self.menu)
-		# for faster access, skip the first menu (contains only root as entry)
-		self.menu = list(self.menu.children.values())[0] # list because of python3
+		# catch internal nodes
+		self.makeNodeMenu(nodes, nodes.__name__, self.menu)
+		try:
+			import external_nodes
+			# catch external nodes when added to path
+			self.makeNodeMenu(external_nodes, external_nodes.__name__, self.menu)
+		except ImportError:
+			pass
+		# for faster access, skip the first menu when only 1 database was loaded
+		dbs = list(self.menu.children.values())
+		if len(dbs) == 1:
+			self.menu = dbs[0]
 	
-	def makeNodeMenu(self, member, parentMenu):
+	def makeNodeMenu(self, member, pgkName, parentMenu):
 		'''Recursively calls to catch all nodes in the import hierarchy'''
 		# get import path (module) or class name (class)
 		memName = member.__name__ if hasattr(member, '__name__') else ''
 		
 		# member is a class
-		if inspect.isclass(member) and self.pgkName in member.__module__:
+		if inspect.isclass(member) and pgkName in member.__module__:
 			# get node name because it looks nicer than the class name (it should!)
 			itemName = ''
 			for srcLine in inspect.getsourcelines(member)[0]:
@@ -589,7 +596,7 @@ class NodeDatabase(object):
 				self.graphEditor.spawnNode(p))
 		
 		# member is another module
-		if inspect.ismodule(member) and self.pgkName in memName:
+		if inspect.ismodule(member) and pgkName in memName:
 			# make menu item
 			memMenu = tk.Menu(parentMenu)
 			memMenu.path = memName
@@ -598,7 +605,7 @@ class NodeDatabase(object):
 			# call for each sub-member
 			subMems = inspect.getmembers(member)
 			for mem in subMems:
-				self.makeNodeMenu(mem[1], memMenu)
+				self.makeNodeMenu(mem[1], pgkName, memMenu)
 
 
 class LogHandler(object):
