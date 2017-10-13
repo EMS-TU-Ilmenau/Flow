@@ -565,7 +565,7 @@ class NodeDatabase(object):
 		self.makeNodeMenu(nodes, nodes.__name__, self.menu)
 		try:
 			import external_nodes
-			# catch external nodes when added to path
+			# catch external nodes when available
 			self.makeNodeMenu(external_nodes, external_nodes.__name__, self.menu)
 		except ImportError:
 			pass

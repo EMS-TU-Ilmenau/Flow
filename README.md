@@ -150,8 +150,7 @@ For real applications, proceed as follow:
 
 ```
 - your_project
-	- __init__.py (can be empty)
-	- external_nodes (exactly this name! Can be layout like [nodes](flow/nodes/) inside)
+	- external_nodes (exactly this name! Can be layout like flow/nodes/ inside)
 		- __init__.py (must import your node modules)
 		- [your node modules]
 	- start_gui.py (can be any name, this is your GUI starter)
@@ -160,11 +159,6 @@ For real applications, proceed as follow:
 In your GUI starter, you need at least this code:
 
 ```python
-import os, sys # for extending node database searchpath
-from flow import gui # for nodeeditor
-
-# add this packages nodes to the searchpath of the GUI
-sys.path.append(os.path.abspath('.'))
-
+from flow import gui
 gui.startApp()
 ```
