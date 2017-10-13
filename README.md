@@ -151,7 +151,7 @@ For real applications, proceed as follow:
 ```
 - your_project
 	- __init__.py (can be empty)
-	- external_nodes/ (exactly this name! Can be layout like [nodes](flow/nodes/) inside)
+	- external_nodes (exactly this name! Can be layout like [nodes](flow/nodes/) inside)
 		- __init__.py (must import your node modules)
 		- [your node modules]
 	- start_gui.py (can be any name, this is your GUI starter)
