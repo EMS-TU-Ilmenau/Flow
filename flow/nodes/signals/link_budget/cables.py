@@ -61,6 +61,12 @@ class EZ141TPM17(CableAttn):
 		self.a = 0.32544
 		self.b = 0.03967
 
+class SX04172B60(CableAttn):
+	def __init__(self):
+		super(SX04172B60, self).__init__('H+S SX 04172 B-60')
+		self.a = 0.233
+		self.b = 0.0575
+
 class LCF1450J(CableAttn):
 	def __init__(self):
 		super(LCF1450J, self).__init__('LCF14-50J')
