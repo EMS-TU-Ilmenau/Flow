@@ -10,10 +10,11 @@ class ptype(object):
 	INT = 2
 	FLOAT = 3
 	COMPLEX = 4
-	LIST = 5
-	TUPLE = 6
-	STR = 7
-	FILE = 8
+	DICT = 5
+	LIST = 6
+	TUPLE = 7
+	STR = 8
+	FILE = 9
 	
 	@classmethod
 	def fromObj(cls, obj):
@@ -25,6 +26,7 @@ class ptype(object):
 			int: cls.INT, 
 			float: cls.FLOAT, 
 			complex: cls.COMPLEX, 
+			dict: cls.DICT, 
 			list: cls.LIST, 
 			tuple: cls.TUPLE, 
 			str: cls.STR, 

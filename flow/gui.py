@@ -36,6 +36,7 @@ COL_DTYPE = {
 	ptype.INT: '#0080FF', 
 	ptype.FLOAT: '#25D4EF', 
 	ptype.COMPLEX: '#AC58FA', 
+	ptype.DICT: '#E93333', 
 	ptype.LIST: '#FF8000', 
 	ptype.TUPLE: '#FFD500', 
 	ptype.STR: '#7AC137', 
