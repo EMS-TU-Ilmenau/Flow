@@ -12,7 +12,7 @@ def read(fname):
 
 setup(
 	name='flow',
-	version='0.0.1',
+	version='0.0.2',
 	author='Niklas Beuster',
 	author_email='niklas.beuster@tu-ilmenau.de',
 	description=('Flow based programming with an optional GUI'),
