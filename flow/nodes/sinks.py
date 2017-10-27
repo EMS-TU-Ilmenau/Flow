@@ -1,4 +1,5 @@
 from flow.node import Node, ptype
+import copy # for deep copy dictionary
 
 class Print(Node):
 	'''Formats input data as string'''
@@ -20,8 +21,9 @@ class DictSink(Node):
 		self.dictOut = self.addOutput('dictionary', ptype.DICT)
 	
 	def process(self, dictionary, key, value):
-		dictionary[key] = value
-		self.dictOut.push(dictionary)
+		dicCopy = copy.deepcopy(dictionary)
+		dicCopy[key] = value
+		self.dictOut.push(dicCopy)
 
 class FileSink(Node):
 	'''Writes input data as lines to a file 
