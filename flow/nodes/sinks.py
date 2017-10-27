@@ -2,7 +2,6 @@ from flow.node import Node, ptype
 
 class Print(Node):
 	'''Formats input data as string'''
-	
 	def __init__(self):
 		super(Print, self).__init__('Print')
 		self.addInput('data')
@@ -11,10 +10,22 @@ class Print(Node):
 	def process(self, data):
 		self.strOut.push('{}'.format(data))
 
+class DictSink(Node):
+	'''Adds / replaces a key:value pair to a dictionary'''
+	def __init__(self):
+		super(DictSink, self).__init__('Dictionary')
+		self.addInput('dictionary', {})
+		self.addInput('key', 'key')
+		self.addInput('value')
+		self.dictOut = self.addOutput('dictionary', ptype.DICT)
+	
+	def process(self, dictionary, key, value):
+		dictionary[key] = value
+		self.dictOut.push(dictionary)
+
 class FileSink(Node):
 	'''Writes input data as lines to a file 
 	specified by a path string input'''
-	
 	def __init__(self):
 		super(FileSink, self).__init__('File sink')
 		self.addInput('data')
