@@ -53,6 +53,18 @@ class ComplexSource(Node):
 	def process(self, re, im):
 		self.complexOut.push(complex(re, im))
 
+class DictSource(Node):
+	'''Gets a value specified by key from a dictionary'''
+	def __init__(self):
+		super(DictSource, self).__init__('Value from dictionary')
+		self.addInput('dictionary', {})
+		self.addInput('key', 'key')
+		self.valOut = self.addOutput('value')
+	
+	def process(self, dictionary, key):
+		if key in dictionary:
+			self.valOut.push(dictionary[key])
+
 class RangeSource(Node):
 	'''Abstract class for range sources'''
 	def __init__(self, name):
