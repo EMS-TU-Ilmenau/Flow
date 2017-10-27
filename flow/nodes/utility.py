@@ -1,12 +1,38 @@
 from flow.node import Node, ptype
-import time
+import time # for the pause node
+import json # for the dict/str converter nodes
+
+class StrToDict(Node):
+	'''Converts a JSON formatted string to to a dictionary'''
+	def __init__(self):
+		super(StrToDict, self).__init__('String to dictionary')
+		self.addInput('string', type=ptype.STR)
+		self.dictOut = self.addOutput('dictionary', ptype.DICT)
+	
+	def process(self, string):
+		try:
+			self.dictOut.push(json.loads(string))
+		except:
+			raise Error('{} cannot convert {:.50}... to a dictionary'.format(self.name, string))
+
+class DictToStr(Node):
+	'''Converts dictionary to a JSON formatted string'''
+	def __init__(self):
+		super(DictToStr, self).__init__('Dictionary to string')
+		self.addInput('dictionary', type=ptype.DICT)
+		self.strOut = self.addOutput('string', ptype.STR)
+	
+	def process(self, dictionary):
+		try:
+			self.strOut.push(json.dumps(dictionary))
+		except:
+			raise Error('{} cannot convert {:.50}... to a string'.format(self.name, dictionary))
 
 class PackArray(Node):
 	'''Fetches data and releases them as an array.
 	The array will be pushed out when reached length, or, 
 	if length < 1, when no elements are incoming anymore.
 	'''
-	
 	def __init__(self):
 		super(PackArray, self).__init__('Pack array')
 		# build inputs and outputs
@@ -33,7 +59,6 @@ class PackArray(Node):
 class UnpackArray(Node):
 	'''Reads all elements from an array and pushes them out. 
 	It basically just unpacks the array'''
-	
 	def __init__(self):
 		super(UnpackArray, self).__init__('Unpack array')
 		self.addInput('array', type=ptype.LIST)
@@ -45,7 +70,6 @@ class UnpackArray(Node):
 
 class Replicate(Node):
 	'''Replicate incoming data n times'''
-	
 	def __init__(self):
 		super(Replicate, self).__init__('Replicate')
 		# build inputs and outputs
@@ -59,7 +83,6 @@ class Replicate(Node):
 
 class Pause(Node):
 	'''Sleeps blocking for specified seconds'''
-	
 	def __init__(self):
 		super(Pause, self).__init__('Pause')
 		self.addInput('data')
