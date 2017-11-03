@@ -136,7 +136,7 @@ class ArcTangens(ToAngle):
 		self.angleFunc = math.atan
 		self.hyperFunc = math.atanh
 
-class MinMax(Operation)
+class MinMax(Operation):
 	def __init__(self):
 		super(MinMax, self).__init__('Min Max')
 		self.res.name = 'lower'
