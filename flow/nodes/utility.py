@@ -68,6 +68,64 @@ class UnpackArray(Node):
 		for element in array:
 			self.elOut.push(element)
 
+class IndexToValue(Node):
+	'''Get a value based on index from a list'''
+	def __init__(self):
+		super(IndexToValue, self).__init__('List value')
+		self.addInput('array', type=ptype.LIST)
+		self.addInput('index', -1)
+		self.valOut = self.addOutput('value')
+	
+	def process(self, array, index):
+		self.valOut.push(array[index])
+
+class ValueToIndex(Node):
+	'''Get an index based on value from a list'''
+	def __init__(self):
+		super(ValueToIndex, self).__init__('List index')
+		self.addInput('array', type=ptype.LIST)
+		self.addInput('value')
+		self.indOut = self.addOutput('index', ptype.INT)
+	
+	def process(self, array, value):
+		self.indOut.push(array.index(value))
+
+class ListMax(Node):
+	'''Get the maximum value and corresponding index from a list'''
+	def __init__(self):
+		super(ListMax, self).__init__('Maximum in list')
+		self.addInput('array', type=ptype.LIST)
+		self.valOut = self.addOutput('value')
+		self.indOut = self.addOutput('index', ptype.INT)
+	
+	def process(self, array):
+		val = max(array)
+		self.valOut.push(val)
+		self.indOut.push(array.index(val))
+
+class ListMin(Node):
+	'''Get the minimum value and corresponding index from a list'''
+	def __init__(self):
+		super(ListMin, self).__init__('Minimum in list')
+		self.addInput('array', type=ptype.LIST)
+		self.valOut = self.addOutput('value')
+		self.indOut = self.addOutput('index', ptype.INT)
+	
+	def process(self, array):
+		val = min(array)
+		self.valOut.push(val)
+		self.indOut.push(array.index(val))
+
+class ListLength(Node):
+	'''Get the length a list'''
+	def __init__(self):
+		super(ListLength, self).__init__('List length')
+		self.addInput('array', type=ptype.LIST)
+		self.lenOut = self.addOutput('length', ptype.INT)
+	
+	def process(self, array):
+		self.lenOut.push(len(array))
+
 class Replicate(Node):
 	'''Replicate incoming data n times'''
 	def __init__(self):
