@@ -49,7 +49,24 @@ What they do **not**:
 
 ## Making a new node
 You can either add a new node to an existing module or even create your own module.
-Either case, writing a new node class is the same:
+Either case, writing a new node class is the same.
+
+Here's the most simple node you can make:
+
+```python
+from flow.node import Node
+class MyNode(Node):
+	def __init__(self):
+		Node.__init__(self, 'Useless')
+		self.addInput('a')
+		self.addOutput('b')
+	
+	def process(self, a):
+		self.getOutput('b').push(a)
+```
+
+This node will just forward any data it gets on input a to output b.
+Here is a better example:
 
 ```python
 from flow.node import Node, ptype
@@ -71,29 +88,41 @@ class MyNode(Node):
 		self.myOut.push(result)
 ```
 
-Note that only **[JSON](https://www.w3schools.com/js/js_json_datatypes.asp) compatible default values** must be passed! 
+This node will format all inputs in a string which is pushed out from the output.
+
+Note that only **[JSON](https://www.w3schools.com/js/js_json_datatypes.asp) compatible default values** must be passed as default values! 
 For other porttypes, specify the `type` argument, e.g. type=ptype.COMPLEX. 
 You may also have a look at the already existing [nodes](flow/nodes/).
 
+Also note that the input/output object will be returned when calling addInput/addOutput.
+It is strongly advised to **store the output as a class variable** like in the second example, as accessing it that way (later in the process method) is faster than via `getOutput`.
+As you don't need the input object in most cases (only its incoming data), there is no need to store it.
+
 In order to load the node in the GUI, two things are of importance:
-- the line `super(MyNode, self).__init__('My nodes name')` (you can use single or double quotes for the name)
+- the line `Node.__init__(self, 'My nodes name')` or `super(MyNode, self).__init__('My nodes name')` (you can use single or double quotes for the name)
 - the class needs to be importable from the [nodes](flow/nodes/) directory in the package.
 
-#### Make a new module
-When making a bunch of new node classes that are needed in a specific field (e.g. plotting, signal processing, device controls, ...) it is a good idea to make a new module.
+#### Make a new module or package
+When making a bunch of new node classes that are needed in a specific field (e.g. plotting, signal processing, device controls, ...) it is a good idea to make a new node package.
 
 The root of all node modules is [nodes](flow/nodes/).
-As you can see, there are even subdirectories, which can contain modules, and other subdirectories, to specialize even further.
+There could be even packages, which can contain modules, and other packages, to specialize even further.
 
-Let's say we want to make a module `my_fancy_nodes.py` in its own subdirectory `my_fancy_lib`:
-- Create a folder in `nodes`and name it `my_fancy_lib`.
-- Open the `__init__.py` file in the root and add `from . import my_fancy_lib` to the end. Save, close.
-- Enter the newly created folder and create a file named `my_fancy_nodes.py`
+Let's say we want to make a module `my_fancy_nodes.py` in its own package `my_fancy_lib`:
+- Create a folder in `nodes` and name it `my_fancy_lib`.
+- Open the `__init__.py` file in `nodes` and add `from . import my_fancy_lib` to the end. Save, close.
+- Enter the newly created folder and create a file named `my_fancy_nodes.py`.
 - Open the file and write `from flow.node import Node, ptype`, then add your node class as described above. Save, close.
 - Create a `__init__.py` file in the same folder.
-- Open the file and write `from . import my_fancy_nodes.py`. Save, close.
+- Open the file and write `from . import my_fancy_nodes`. Save, close.
 
-That's it. The GUI will automatically recognize the new module and all node classes inside when started.
+When starting the GUI, it will automatically recognize the new package, the module and all node classes inside.
+Right-click in the editor and the pop-up menu will show the newly created hierarchy.
+
+**Tip**: To avoid showing the module, import all node classes in the package, then delete the module like this:
+- Open the `__init__.py` file in the `my_fancy_lib` folder.
+- Change `from . import my_fancy_nodes` to `from .my_fancy_nodes import *`
+- Add a new line with `del my_fancy_nodes`. Save, close.
 
 ## Concept
 The general concept is called **flow based programming** (FBP). 
