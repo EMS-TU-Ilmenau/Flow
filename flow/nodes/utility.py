@@ -2,6 +2,30 @@ from flow.node import Node, ptype
 import time # for the pause node
 import json # for the dict/str converter nodes
 
+class StrSplit(Node):
+	'''Splits a string by delimiter and pushes out the separated string parts'''
+	def __init__(self):
+		super(StrSplit, self).__init__('String split')
+		self.addInput('string', type=ptype.STR)
+		self.addInput('delimiter', ',')
+		self.strOut = self.addOutput('parts', ptype.STR)
+	
+	def process(self, string, delimiter):
+		for part in string.split(delimiter):
+			self.strOut.push(part)
+
+class StrReplace(Node):
+	'''Replaces a pattern in a string'''
+	def __init__(self):
+		super(StrReplace, self).__init__('String replace')
+		self.addInput('string', type=ptype.STR)
+		self.addInput('find', ';')
+		self.addInput('replace', ',')
+		self.strOut = self.addOutput('modified', ptype.STR)
+	
+	def process(self, string, find, replace):
+		self.strOut.push(string.replace(find, replace))
+
 class StrToDict(Node):
 	'''Converts a JSON formatted string to to a dictionary'''
 	def __init__(self):
@@ -69,31 +93,35 @@ class UnpackArray(Node):
 			self.elOut.push(element)
 
 class IndexToValue(Node):
-	'''Get a value based on index from a list'''
+	'''Get a value based on index from an array'''
 	def __init__(self):
-		super(IndexToValue, self).__init__('List value')
+		super(IndexToValue, self).__init__('Array value')
 		self.addInput('array', type=ptype.LIST)
 		self.addInput('index', -1)
 		self.valOut = self.addOutput('value')
 	
 	def process(self, array, index):
-		self.valOut.push(array[index])
+		try:
+			self.valOut.push(array[index])
+		except IndexError:
+			pass
 
 class ValueToIndex(Node):
-	'''Get an index based on value from a list'''
+	'''Get an index based on value from an array'''
 	def __init__(self):
-		super(ValueToIndex, self).__init__('List index')
+		super(ValueToIndex, self).__init__('Array index')
 		self.addInput('array', type=ptype.LIST)
 		self.addInput('value')
 		self.indOut = self.addOutput('index', ptype.INT)
 	
 	def process(self, array, value):
-		self.indOut.push(array.index(value))
+		if value in array:
+			self.indOut.push(array.index(value))
 
-class ListMax(Node):
-	'''Get the maximum value and corresponding index from a list'''
+class ArrayMax(Node):
+	'''Get the maximum value and corresponding index from an array'''
 	def __init__(self):
-		super(ListMax, self).__init__('Maximum in list')
+		super(ArrayMax, self).__init__('Maximum in array')
 		self.addInput('array', type=ptype.LIST)
 		self.valOut = self.addOutput('value')
 		self.indOut = self.addOutput('index', ptype.INT)
@@ -103,10 +131,10 @@ class ListMax(Node):
 		self.valOut.push(val)
 		self.indOut.push(array.index(val))
 
-class ListMin(Node):
-	'''Get the minimum value and corresponding index from a list'''
+class ArrayMin(Node):
+	'''Get the minimum value and corresponding index from an array'''
 	def __init__(self):
-		super(ListMin, self).__init__('Minimum in list')
+		super(ArrayMin, self).__init__('Minimum in array')
 		self.addInput('array', type=ptype.LIST)
 		self.valOut = self.addOutput('value')
 		self.indOut = self.addOutput('index', ptype.INT)
@@ -116,15 +144,41 @@ class ListMin(Node):
 		self.valOut.push(val)
 		self.indOut.push(array.index(val))
 
-class ListLength(Node):
-	'''Get the length a list'''
+class ArrayLength(Node):
+	'''Get the length an array'''
 	def __init__(self):
-		super(ListLength, self).__init__('List length')
+		super(ArrayLength, self).__init__('Array length')
 		self.addInput('array', type=ptype.LIST)
 		self.lenOut = self.addOutput('length', ptype.INT)
 	
 	def process(self, array):
 		self.lenOut.push(len(array))
+
+class ArrayAppend(Node):
+	'''Adds an element to an array'''
+	def __init__(self):
+		Node.__init__(self, 'Append to Array')
+		self.addInput('array', type=ptype.LIST)
+		self.addInput('data')
+		self.arrOut = self.addOutput('array', ptype.LIST)
+	
+	def process(self, array, data):
+		arrCopy = array[:] # copy in case array is processed by other nodes too
+		arrCopy.append(data)
+		self.arrOut.push(arrCopy)
+
+class ArrayRemove(Node):
+	'''Removes an element of an array'''
+	def __init__(self):
+		Node.__init__(self, 'Remove from Array')
+		self.addInput('array', type=ptype.LIST)
+		self.addInput('data')
+		self.arrOut = self.addOutput('array', ptype.LIST)
+	
+	def process(self, array, data):
+		arrCopy = array[:]
+		arrCopy.remove(data)
+		self.arrOut.push(arrCopy)
 
 class Replicate(Node):
 	'''Replicate incoming data n times'''
