@@ -161,6 +161,20 @@ class Graph(object):
 		''':returns: list of nodes in a layer-wise execution order'''		
 		# get source nodes first
 		sourceNodes = self.getSources()
+		if not sourceNodes:
+			# user has build a weird loop, try to solve
+			log.warning('No source node found for run order')
+			sinkNodes = self.getSinks()
+			iNode = 0
+			while True:
+				startNode = self.nodes[iNode]
+				iNode += 1
+				if startNode not in sinkNodes:
+					sourceNodes = [startNode]
+					break
+				if iNode > len(self.nodes):
+					log.error('Cannot solve run order. Using a suboptimal order.')
+					return self.nodes
 		orderedNodes = sourceNodes
 		
 		# now go down the hierachy layer-wise until all nodes are in the list once

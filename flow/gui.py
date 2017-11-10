@@ -163,6 +163,11 @@ class InputVisual(object):
 			bg=COL_PRIM, fg=COL_HL)
 		self.title.pack(side=tk.LEFT, padx=3)
 		
+		# check if we need a default value
+		self.value = None
+		self.default = None
+		if self.input.default is None:
+			return
 		# add default value based on data type
 		if self.input.type in (ptype.STR, ptype.FILE):
 			# string
@@ -189,10 +194,6 @@ class InputVisual(object):
 			# bool
 			self.value = tk.BooleanVar()
 			self.default = tk.Checkbutton(self.body, variable=self.value)
-		else:
-			# no type we can set via widgets
-			self.value = None
-			self.default = None
 		
 		if self.value:
 			# setup value exchange
@@ -586,10 +587,12 @@ class NodeDatabase(object):
 			# get node name because it looks nicer than the class name (it should!)
 			itemName = ''
 			for srcLine in inspect.getsourcelines(member)[0]:
-				if '__init__(\'' in srcLine:
+				if '.__init__(\'' in srcLine or '.__init__(self,\'' in srcLine.replace(' ', ''):
 					itemName = srcLine.split('\'')[1]
-				elif '__init__(\"' in srcLine:
+					break
+				elif '.__init__(\"' in srcLine or '.__init__(self,\"' in srcLine.replace(' ', ''):
 					itemName = srcLine.split('\"')[1]
+					break
 			if not itemName:
 				return
 			# make menu item
@@ -634,7 +637,7 @@ class LogHandler(object):
 		# make warning panel
 		self.alert = tk.Label(self.app.graphEditor.bg, cursor='X_cursor', 
 			font=self.font, bg=COL_HL, fg=COL_BG)
-		self.alert.bind('<Button-1>', lambda e: e.widget.pack_forget())
+		self.alert.bind('<Button-1>', lambda _: self.resetWarning())
 		self.alert.pack(side=tk.TOP)
 		self.alert.pack_forget() # initially not visible
 		
@@ -662,8 +665,13 @@ class LogHandler(object):
 	
 	def warn(self, warning):
 		'''Shows a warning'''
-		self.alert.config(text=warning)
+		self.alert.config(text=self.alert.cget('text')+warning)
 		self.alert.pack()
+	
+	def resetWarning(self):
+		'''Resets the warnings in the alert panel.'''
+		self.alert.config(text='')
+		self.alert.pack_forget()
 	
 	def write(self, msg):
 		'''This method is called from the logging module for each message'''
