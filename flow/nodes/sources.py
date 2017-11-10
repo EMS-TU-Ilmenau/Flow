@@ -37,7 +37,7 @@ class StringSource(Node):
 	def __init__(self):
 		super(StringSource, self).__init__('String out')
 		input = self.addInput('value', 'Hello')
-		self.srcOut = self.addOutput('bool', input.type)
+		self.srcOut = self.addOutput('string', input.type)
 	
 	def process(self, value):
 		self.srcOut.push(str(value))
