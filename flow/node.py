@@ -1,4 +1,5 @@
 import logging # for debugging the dataflow
+import copy # for deep copying data when output pushes to multiple inputs
 
 log = logging.getLogger(__name__)
 
@@ -248,9 +249,14 @@ class OutputPort(object):
 		'''Pushes data into the buffer of all connected inputs 
 		or save as result if unconnected.'''
 		if self.isConnected():
+			share = 0
 			for input in self.connInputs:
+				share += 1
 				log.info('{}.{} pushing data out to {}.{}'.format(
 					self.node.name, self.name, input.node.name, input.name))
-				input.buffer.append(data)
+				if share > 1:
+					input.buffer.append(copy.deepcopy(data))
+				else:
+					input.buffer.append(data)
 		else:
 			self.result = data

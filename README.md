@@ -89,18 +89,15 @@ class MyNode(Node):
 ```
 
 This node will format all inputs in a string which is pushed out from the output.
+For more examples, have a look at the already existing [nodes](flow/nodes/).
 
-Note that only **[JSON](https://www.w3schools.com/js/js_json_datatypes.asp) compatible default values** must be passed as default values! 
-For other porttypes, specify the `type` argument, e.g. type=ptype.COMPLEX. 
-You may also have a look at the already existing [nodes](flow/nodes/).
-
-Also note that the input/output object will be returned when calling addInput/addOutput.
-It is strongly advised to **store the output as a class variable** like in the second example, as accessing it that way (later in the process method) is faster than via `getOutput`.
-As you don't need the input object in most cases (only its incoming data), there is no need to store it.
-
-In order to load the node in the GUI, two things are of importance:
-- the line `Node.__init__(self, 'My nodes name')` or `super(MyNode, self).__init__('My nodes name')` (you can use single or double quotes for the name)
-- the class needs to be importable from the [nodes](flow/nodes/) directory in the package.
+#### Hints
+- Only **[JSON](https://www.w3schools.com/js/js_json_datatypes.asp) compatible default values** must be passed as default values! For other porttypes, specify the `type` argument, e.g. type=ptype.COMPLEX.
+- When calling ``addInput``/``addOutput` an input/output object will be returned. It is strongly advised to **store the output as a class variable** like in the second example, as accessing it that way (later in the process method) is faster than via `getOutput`.
+- In order to load the node in the GUI, two things are of importance:
+	- The line `Node.__init__(self, 'My nodes name')` or `super(MyNode, self).__init__('My nodes name')` (you can use single or double quotes for the name)
+	- The class needs to be importable from the [nodes](flow/nodes/) directory in the package.
+- When an output is connected to more than one input, a deep copy of the data is passed to each connected input instead of the reference. This may be performance loss, but prevents a lot of trouble and is intuitive for the user.
 
 #### Make a new module or package
 When making a bunch of new node classes that are needed in a specific field (e.g. plotting, signal processing, device controls, ...) it is a good idea to make a new node package.

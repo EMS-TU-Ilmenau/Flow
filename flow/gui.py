@@ -281,7 +281,8 @@ class OutputVisual(object):
 	def setResult(self):
 		'''updates the view to display the ports result'''
 		resStr = str(self.output.result) # result formatted as string
-		self.value.set('{}...{}'.format(resStr[:10], resStr[-10:]) if len(resStr) > 20 else resStr)
+		maxLen = 40
+		self.value.set('{}...{}'.format(resStr[:maxLen/2], resStr[-maxLen/2:]) if len(resStr) > maxLen else resStr)
 		self.resultVisible(True if self.output.result is not None else False)
 	
 	def resultVisible(self, visible):

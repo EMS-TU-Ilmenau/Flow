@@ -163,9 +163,8 @@ class ArrayAppend(Node):
 		self.arrOut = self.addOutput('array', ptype.LIST)
 	
 	def process(self, array, data):
-		arrCopy = array[:] # copy in case array is processed by other nodes too
-		arrCopy.append(data)
-		self.arrOut.push(arrCopy)
+		array.append(data)
+		self.arrOut.push(array)
 
 class ArrayRemove(Node):
 	'''Removes an element of an array'''
@@ -176,9 +175,8 @@ class ArrayRemove(Node):
 		self.arrOut = self.addOutput('array', ptype.LIST)
 	
 	def process(self, array, data):
-		arrCopy = array[:]
-		arrCopy.remove(data)
-		self.arrOut.push(arrCopy)
+		array.remove(data)
+		self.arrOut.push(array)
 
 class Replicate(Node):
 	'''Replicate incoming data n times'''
