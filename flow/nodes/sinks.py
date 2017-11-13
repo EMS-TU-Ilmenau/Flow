@@ -39,7 +39,7 @@ class FileSink(Node):
 	
 	def process(self, data, filepath, lines):
 		if not self.file:
-			self.file = open(filepath, 'a')
+			self.file = open(filepath, 'w')
 		# append data to file
 		self.file.write(data+'\n' if lines else data)
 		self.pathOut.push(filepath)
