@@ -312,10 +312,8 @@ class Graph(object):
 		The challenge here is dealing with loops and data decimating nodes.
 		:returns: True when there is nothing to process, or False when not
 		'''
-		# check if all non-loop inputs of all nodes have empty buffer
-		return all(all((not input.buffer or input in self.loopInputs) 
-			for input in node.inputs) 
-			for node in self.nodes)
+		# check if all nodes cannot process
+		return all(not node.busy for node in self.nodes)
 	
 	def getResults(self):
 		''':returns: list of dictionaries with the sink nodes 

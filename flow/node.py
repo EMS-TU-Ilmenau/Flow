@@ -46,6 +46,7 @@ class Node(object):
 		self.inputs = []
 		self.outputs = []
 		self.name = name
+		self.busy = False
 	
 	def __del__(self):
 		self.disconnect() # disconnect from other nodes before deleting
@@ -99,6 +100,7 @@ class Node(object):
 		'''
 		log.debug('{} is collecting data'.format(self.name))
 		if all(input.couldPull() for input in self.inputs):
+			self.busy = True
 			log.debug('{} can process\n'.format(self.name))
 			# get data from the inputs when all could pull
 			data = {}
@@ -107,6 +109,7 @@ class Node(object):
 			# process data
 			self.process(**data)
 		else:
+			self.busy = False
 			log.debug('{} can NOT process\n'.format(self.name))
 	
 	def process(self, **inputData):
