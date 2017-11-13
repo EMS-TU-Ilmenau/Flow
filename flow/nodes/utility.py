@@ -158,7 +158,7 @@ class ArrayAppend(Node):
 	'''Adds an element to an array'''
 	def __init__(self):
 		Node.__init__(self, 'Append to Array')
-		self.addInput('array', type=ptype.LIST)
+		self.addInput('array', [])
 		self.addInput('data')
 		self.arrOut = self.addOutput('array', ptype.LIST)
 	
