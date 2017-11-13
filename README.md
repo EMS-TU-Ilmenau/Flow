@@ -97,7 +97,7 @@ For more examples, have a look at the already existing [nodes](flow/nodes/).
 - In order to load the node in the GUI, two things are of importance:
 	- The line `Node.__init__(self, 'My nodes name')` or `super(MyNode, self).__init__('My nodes name')` (you can use single or double quotes for the name)
 	- The class needs to be importable from the [nodes](flow/nodes/) directory in the package.
-- When an output is connected to more than one input, a deep copy of the data is passed to each connected input instead of the reference. This may be performance loss, but prevents a lot of trouble and is intuitive for the user.
+- When an output is connected to more than one input, a deep copy of the data is passed to each extra connected input. This may be performance loss, but prevents a lot of trouble if data is of reference type and is intuitive for the user.
 
 #### Make a new module or package
 When making a bunch of new node classes that are needed in a specific field (e.g. plotting, signal processing, device controls, ...) it is a good idea to make a new node package.
