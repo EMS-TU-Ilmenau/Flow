@@ -377,7 +377,7 @@ class GraphEditor(object):
 		self.spawnPos = self.mousePos()
 		self.nodeDB.menu.post(e.x_root, e.y_root)
 	
-	def spawnNode(self, classPath, spawnPos=None):
+	def spawnNode(self, classPath, spawnPos=None, name=''):
 		'''Instantiates a node in the graph.
 		:param classPath: class import path. E.g. "flow.nodes.sinks.Print"
 		:param spawnPos: Point position where the node is placed'''
@@ -392,6 +392,8 @@ class GraphEditor(object):
 			if mem[0] == clsName:
 				node = mem[1]()
 				node.classPath = classPath # remember origin for saving graph
+				if name: # in case there are multiple nodes of the same class
+					node.name = name
 				# place node visual on panel
 				pos = spawnPos or self.spawnPos
 				self.graph.addNode(node)
@@ -427,9 +429,9 @@ class GraphEditor(object):
 		self.curZoom = graphDict.get('zoom', self.curZoom)
 		
 		# instantiate nodes from class
-		for nodeEntry in graphDict['nodes'].values():
+		for nodeName, nodeEntry in graphDict['nodes'].items():
 			pos = nodeEntry.get('pos', [10, 10])
-			self.spawnNode(nodeEntry['class'], Point(*pos))
+			self.spawnNode(nodeEntry['class'], Point(*pos), nodeName)
 		
 		# go through a second time to update default and connect
 		for nodeName, nodeEntry in graphDict['nodes'].items():
