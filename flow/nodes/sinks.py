@@ -14,11 +14,14 @@ class DictSink(Node):
 	'''Adds / replaces a key:value pair to a dictionary'''
 	def __init__(self):
 		super(DictSink, self).__init__('Dictionary')
-		self.addInput('dictionary', {})
+		self.dictIn = self.addInput('dictionary', {})
 		self.addInput('key', 'key')
 		self.addInput('value')
 		self.dictOut = self.addOutput('dictionary', ptype.DICT)
 	
+	def prepare(self):
+		self.dictIn.default = {} # to clean reference
+		
 	def process(self, dictionary, key, value):
 		dictionary[key] = value
 		self.dictOut.push(dictionary)
