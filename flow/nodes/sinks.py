@@ -33,7 +33,7 @@ class FileSink(Node):
 		super(FileSink, self).__init__('File sink')
 		self.addInput('data', type=ptype.STR)
 		self.addInput('filepath', '/Path/To/File.suffix', type=ptype.FILE)
-		self.addInput('lines', True) # adding linefeed or not
+		self.addInput('lines', False) # adding linefeed or not
 		# only technical needed to have a result value (the path when finished)
 		self.pathOut = self.addOutput('filepath', ptype.STR)
 		# for faster processing, we let the file object open until the graph finished.
@@ -42,7 +42,7 @@ class FileSink(Node):
 	
 	def process(self, data, filepath, lines):
 		if not self.file:
-			self.file = open(filepath, 'w')
+			self.file = open(filepath, 'a' if lines else 'w')
 		# append data to file
 		self.file.write(data+'\n' if lines else data)
 		self.pathOut.push(filepath)
