@@ -329,6 +329,10 @@ class GraphEditor(object):
 		self.dragInput = None
 		self.dragOutput = None
 		self.bg.bind_all('<B1-Motion>', self.onConnDragging)
+		
+		# setup for panning graph
+		self.bg.bind('<Button-1>', self.onLeftClick)
+		self.bg.bind('<B1-Motion>', self.onPanning)
 	
 	def mousePos(self):
 		''':returns: mouse position relative to the background'''
@@ -372,8 +376,24 @@ class GraphEditor(object):
 		self.bg.after_idle(self.drawConns)
 		self.bg.after(100, self.drawConns)
 	
+	def onLeftClick(self, e):
+		'''User clicked left on the background'''
+		self.panStart = Point(e.x, e.y)
+	
+	def onPanning(self, e):
+		'''User is holding and dragging on the background'''
+		# get relative position since last left click
+		panPos = Point(e.x, e.y)
+		deltaPos = panPos-self.panStart
+		for node in self.graph.nodes:
+			nodeVisual = node.visual
+			oldPos = nodeVisual.pos
+			nodeVisual.setPos(oldPos+deltaPos)
+		self.panStart = panPos
+	
 	def onRightDown(self, e):
 		'''Shows a popup menu for spawing the nodes.'''
+		# shows the popup menu for spawing the nodes
 		self.spawnPos = self.mousePos()
 		self.nodeDB.menu.post(e.x_root, e.y_root)
 	
@@ -399,7 +419,9 @@ class GraphEditor(object):
 				self.graph.addNode(node)
 				nodeVisual = NodeVisual(self, node, pos)
 				nodeVisual.setScale(self.curZoom)
-				break
+				return
+		
+		raise ImportError('Node {} cannot be found in {}'.format(clsName, modName))
 	
 	def deleteNode(self, nodeName):
 		'''removes a node and its visual from the graph.
@@ -760,7 +782,7 @@ class FlowApp(object):
 					self.graphEditor.fromDict(graphDict)
 				except:
 					logging.exception('Opening graph file failed') # with traceback
-					logging.error('Not a valid graph file') # visible for the user
+					logging.error('Invalid or outdated graph file') # visible for the user
 	
 	def onSave(self):
 		'''Saves the current graph as a json encoded file.'''
@@ -772,8 +794,7 @@ class FlowApp(object):
 	
 	def onQuit(self):
 		# stop running graph
-		if self.graphThread and self.graphThread.is_alive():
-			self.graphStop.set()
+		if not self.stopGraph():
 			logging.warning('The graph is still processing. Stopping it now')
 			return
 		# quit the application
@@ -811,14 +832,28 @@ class FlowApp(object):
 	
 	def graphReady(self):
 		''':returns: True if graph is ready, False else'''
-		# stop already running graph
-		if self.graphThread and self.graphThread.is_alive():
-			self.graphStop.set()
-			return False
 		# check if there is even a graph
 		if not self.graphEditor.graph.nodes:
 			return False
+		# stop already running graph
+		return self.stopGraph()
 		# graph is ready
+		return True
+	
+	def stopGraph(self):
+		'''Tries to stop a running graph.
+		:returns: True when graph is not running, else False'''
+		if self.graphThread and self.graphThread.is_alive():
+			if self.graphStop.is_set():
+				logging.error('Already tried to stop graph')
+				self.graphThread.join(5)
+				if self.graphThread.is_alive():
+					logging.fatal('Cannot stop graph')
+				else:
+					return True
+			else:
+				self.graphStop.set()
+			return False
 		return True
 	
 	def _graphRun(self, stopper):
