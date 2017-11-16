@@ -48,7 +48,7 @@ class DictToStr(Node):
 	
 	def process(self, dictionary):
 		try:
-			self.strOut.push(json.dumps(dictionary))
+			self.strOut.push(json.dumps(dictionary, indent=4))
 		except:
 			raise Error('{} cannot convert {:.50}... to a string'.format(self.name, dictionary))
 
