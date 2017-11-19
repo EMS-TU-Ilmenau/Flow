@@ -386,6 +386,7 @@ class GraphEditor(object):
 	def onLeftClick(self, e):
 		'''User clicked left on the background'''
 		self.panStart = Point(e.x, e.y)
+		self.bg.focus_set() # to redirect key inputs here (space for searching)
 	
 	def onPanning(self, e):
 		'''User is holding and dragging on the background'''
@@ -613,7 +614,7 @@ class NodeDatabase(object):
 		self.nodesDict = {}
 		self.searchTerm = tk.StringVar()
 		self.searchTerm.trace('w', self.onSearching)
-		self.graphEditor.app.root.bind('<space>', lambda _: self.openSearch())
+		self.graphEditor.bg.bind('<space>', lambda _: self.openSearch())
 		# make panel containing search field and result list
 		self.searchPanel = tk.Frame(self.graphEditor.bg, bg=COL_PRIM)
 		self.searchPanel.pack(side=tk.TOP)
@@ -700,12 +701,13 @@ class NodeDatabase(object):
 	def openSearch(self):
 		'''Shows the search panel'''
 		self.searchPanel.pack()
-		self.searchField.focus()
+		self.searchField.focus_set()
 	
 	def closeSearch(self, e):
 		'''Resets search term hides the search panel'''
 		self.searchTerm.set('')
 		self.searchPanel.pack_forget()
+		self.graphEditor.bg.focus_set()
 	
 	def onSearching(self, *args):
 		'''Shows the search panel'''
