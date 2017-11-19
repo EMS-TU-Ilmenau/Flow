@@ -31,7 +31,7 @@ class FileSink(Node):
 	specified by a path string input'''
 	def __init__(self):
 		super(FileSink, self).__init__('File sink')
-		self.addInput('data', type=ptype.STR)
+		self.addInput('string', type=ptype.STR)
 		self.addInput('filepath', '/Path/To/File.suffix', type=ptype.FILE)
 		self.addInput('lines', False) # adding linefeed or not
 		# only technical needed to have a result value (the path when finished)
@@ -40,11 +40,11 @@ class FileSink(Node):
 		# alternatively, open and close it in the process method, using "with"
 		self.file = None
 	
-	def process(self, data, filepath, lines):
+	def process(self, string, filepath, lines):
 		if not self.file:
 			self.file = open(filepath, 'a' if lines else 'w')
 		# append data to file
-		self.file.write(data+'\n' if lines else data)
+		self.file.write(string+'\n' if lines else string)
 		self.pathOut.push(filepath)
 	
 	def finish(self):
