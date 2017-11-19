@@ -1,180 +1,180 @@
 {
+    "zoom": 1.2000000000000002,
     "nodes": {
         "Dictionary.2": {
+            "pos": [
+                326,
+                261
+            ],
+            "class": "flow.nodes.sinks.DictSink",
             "inputs": {
-                "value": {
-                    "default": null, 
-                    "connection": {
-                        "node": "String out", 
-                        "output": "string"
-                    }
-                }, 
-                "key": {
-                    "default": "greeting", 
-                    "connection": null
-                }, 
                 "dictionary": {
-                    "default": {}, 
+                    "default": {},
                     "connection": {
-                        "node": "Dictionary", 
+                        "node": "Dictionary",
                         "output": "dictionary"
                     }
-                }
-            }, 
-            "pos": [
-                326, 
-                261
-            ], 
-            "class": "flow.nodes.sinks.DictSink"
-        }, 
-        "Int out": {
-            "inputs": {
+                },
+                "key": {
+                    "default": "greeting",
+                    "connection": null
+                },
                 "value": {
-                    "default": 0, 
-                    "connection": null
-                }
-            }, 
-            "pos": [
-                23, 
-                102
-            ], 
-            "class": "flow.nodes.sources.IntegerSource"
-        }, 
-        "File sink": {
-            "inputs": {
-                "lines": {
-                    "default": true, 
-                    "connection": null
-                }, 
-                "data": {
-                    "default": null, 
+                    "default": null,
                     "connection": {
-                        "node": "Dictionary to string", 
+                        "node": "String out",
                         "output": "string"
                     }
-                }, 
-                "filepath": {
-                    "default": "test.txt", 
-                    "connection": null
                 }
-            }, 
+            }
+        },
+        "Int out": {
             "pos": [
-                691, 
-                277
-            ], 
-            "class": "flow.nodes.sinks.FileSink"
-        }, 
-        "Dictionary.1": {
+                23,
+                102
+            ],
+            "class": "flow.nodes.sources.IntegerSource",
             "inputs": {
                 "value": {
-                    "default": null, 
+                    "default": 0,
+                    "connection": null
+                }
+            }
+        },
+        "File sink": {
+            "pos": [
+                691,
+                277
+            ],
+            "class": "flow.nodes.sinks.FileSink",
+            "inputs": {
+                "string": {
+                    "default": null,
                     "connection": {
-                        "node": "Float out", 
+                        "node": "Dictionary to string",
+                        "output": "string"
+                    }
+                },
+                "filepath": {
+                    "default": "test.txt",
+                    "connection": null
+                },
+                "lines": {
+                    "default": false,
+                    "connection": null
+                }
+            }
+        },
+        "Dictionary.1": {
+            "pos": [
+                428,
+                72
+            ],
+            "class": "flow.nodes.sinks.DictSink",
+            "inputs": {
+                "dictionary": {
+                    "default": {},
+                    "connection": {
+                        "node": "Dictionary",
+                        "output": "dictionary"
+                    }
+                },
+                "key": {
+                    "default": "num",
+                    "connection": null
+                },
+                "value": {
+                    "default": null,
+                    "connection": {
+                        "node": "Float out",
                         "output": "float"
                     }
-                }, 
-                "key": {
-                    "default": "num", 
-                    "connection": null
-                }, 
-                "dictionary": {
-                    "default": {}, 
-                    "connection": {
-                        "node": "Dictionary", 
-                        "output": "dictionary"
-                    }
                 }
-            }, 
-            "pos": [
-                428, 
-                72
-            ], 
-            "class": "flow.nodes.sinks.DictSink"
-        }, 
+            }
+        },
         "String out": {
+            "pos": [
+                197,
+                314
+            ],
+            "class": "flow.nodes.sources.StringSource",
             "inputs": {
                 "value": {
-                    "default": "Hello", 
+                    "default": "Hello",
                     "connection": null
                 }
-            }, 
-            "pos": [
-                197, 
-                314
-            ], 
-            "class": "flow.nodes.sources.StringSource"
-        }, 
+            }
+        },
         "Dictionary": {
+            "pos": [
+                136,
+                65
+            ],
+            "class": "flow.nodes.sinks.DictSink",
             "inputs": {
-                "value": {
-                    "default": null, 
-                    "connection": {
-                        "node": "Int out", 
-                        "output": "int"
-                    }
-                }, 
-                "key": {
-                    "default": "num", 
-                    "connection": null
-                }, 
                 "dictionary": {
                     "default": {
                         "num": 42.0
-                    }, 
+                    },
                     "connection": null
+                },
+                "key": {
+                    "default": "num",
+                    "connection": null
+                },
+                "value": {
+                    "default": null,
+                    "connection": {
+                        "node": "Int out",
+                        "output": "int"
+                    }
                 }
-            }, 
-            "pos": [
-                136, 
-                65
-            ], 
-            "class": "flow.nodes.sinks.DictSink"
-        }, 
+            }
+        },
         "Float out": {
+            "pos": [
+                307,
+                155
+            ],
+            "class": "flow.nodes.sources.FloatSource",
             "inputs": {
                 "value": {
-                    "default": 42.0, 
+                    "default": 42.0,
                     "connection": null
                 }
-            }, 
-            "pos": [
-                307, 
-                155
-            ], 
-            "class": "flow.nodes.sources.FloatSource"
-        }, 
+            }
+        },
         "Print": {
+            "pos": [
+                508,
+                402
+            ],
+            "class": "flow.nodes.sinks.Print",
             "inputs": {
                 "data": {
-                    "default": null, 
+                    "default": null,
                     "connection": {
-                        "node": "Dictionary.2", 
+                        "node": "Dictionary.2",
                         "output": "dictionary"
                     }
                 }
-            }, 
-            "pos": [
-                508, 
-                402
-            ], 
-            "class": "flow.nodes.sinks.Print"
-        }, 
+            }
+        },
         "Dictionary to string": {
+            "pos": [
+                490,
+                293
+            ],
+            "class": "flow.nodes.utility.DictToStr",
             "inputs": {
                 "dictionary": {
-                    "default": null, 
+                    "default": null,
                     "connection": {
-                        "node": "Dictionary.2", 
+                        "node": "Dictionary.2",
                         "output": "dictionary"
                     }
                 }
-            }, 
-            "pos": [
-                490, 
-                293
-            ], 
-            "class": "flow.nodes.utility.DictToStr"
+            }
         }
-    }, 
-    "zoom": 1.2000000000000002
+    }
 }
