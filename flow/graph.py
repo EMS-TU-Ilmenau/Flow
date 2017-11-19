@@ -87,13 +87,34 @@ class Graph(object):
 		self.nodesRunOrder = None
 		self.loopInputs = None
 	
+	def nodeFromDatabase(self, classPath, name=''):
+		'''Instantiates a node from the database.
+		:param classPath: string like "package.module.NodeClassName"
+		:param name: optional name for re-naming the node
+		:returns: node instance'''
+		# get module/class seperator
+		sep = classPath.rfind('.')
+		modName = classPath[:sep] # module name
+		clsName = classPath[sep+1:] # class name
+		# instantiate node
+		mod = importlib.import_module(modName)
+		modMems = inspect.getmembers(mod)
+		for mem in modMems:
+			if mem[0] == clsName:
+				node = mem[1]()
+				if name: # optional rename node
+					node.name = name
+				return node
+		
+		raise ImportError('Node {} cannot be found in {}'.format(clsName, modName))
+	
 	def fromDict(self, graphDict):
 		'''Builds nodes and connections from json formatted string.
 		
 		:param graphDict: dictionary ("connection" and "default" may be null):
 			{"nodes": {
 				"nodeA": {
-					"class": "module.NodeClassName", 
+					"class": "package.module.NodeClassName", 
 					"inputs": {
 						"inputA": {
 							"connection": {"node": "nodeB", "output": "outputA"}, 
@@ -108,20 +129,9 @@ class Graph(object):
 		self.clear() # clean up old graph
 		
 		# instantiate nodes from class
-		for nodeEntry in graphDict['nodes'].values():
+		for nodeName, nodeEntry in graphDict['nodes'].items():
 			classPath = nodeEntry['class']
-			# get module/class seperator
-			sep = classPath.rfind('.')
-			modName = classPath[:sep] # module name
-			clsName = classPath[sep+1:] # class name
-			# instantiate node
-			mod = importlib.import_module(modName)
-			modMems = inspect.getmembers(mod)
-			for mem in modMems:
-				if mem[0] == clsName:
-					node = mem[1]()
-					self.addNode(node)
-					break
+			self.addNode(self.nodeFromDatabase(classPath, nodeName))
 		
 		# go through a second time to update default and connect
 		for nodeName, nodeEntry in graphDict['nodes'].items():

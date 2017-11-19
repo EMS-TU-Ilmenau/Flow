@@ -403,27 +403,15 @@ class GraphEditor(object):
 		'''Instantiates a node in the graph.
 		:param classPath: class import path. E.g. "flow.nodes.sinks.Print"
 		:param spawnPos: Point position where the node is placed'''
-		# get module/class seperator
-		sep = classPath.rfind('.')
-		modName = classPath[:sep] # module name
-		clsName = classPath[sep+1:] # class name
 		# instantiate node
-		mod = importlib.import_module(modName)
-		modMems = inspect.getmembers(mod)
-		for mem in modMems:
-			if mem[0] == clsName:
-				node = mem[1]()
-				node.classPath = classPath # remember origin for saving graph
-				if name: # in case there are multiple nodes of the same class
-					node.name = name
-				# place node visual on panel
-				pos = spawnPos or self.spawnPos
-				self.graph.addNode(node)
-				nodeVisual = NodeVisual(self, node, pos)
-				nodeVisual.setScale(self.curZoom)
-				return
-		
-		raise ImportError('Node {} cannot be found in {}'.format(clsName, modName))
+		node = self.graph.nodeFromDatabase(classPath, name)
+		# GUI related node modifications
+		node.classPath = classPath # remember origin for saving graph
+		pos = spawnPos or self.spawnPos
+		# place node in graph logically and visually
+		self.graph.addNode(node)
+		nodeVisual = NodeVisual(self, node, pos)
+		nodeVisual.setScale(self.curZoom)
 	
 	def deleteNode(self, nodeName):
 		'''removes a node and its visual from the graph.
