@@ -44,6 +44,11 @@ COL_DTYPE = {
 	ptype.STR: '#7AC137', 
 	ptype.FILE: '#198B4A'}
 
+def setupHoverColor(widget, hoverCol=COL_MAIN):
+	'''Add bindings to a widget to change its background color upon hover'''
+	widget.normalCol = widget.cget('bg')
+	widget.bind('<Enter>', lambda _: widget.config(bg=hoverCol))
+	widget.bind('<Leave>', lambda _: widget.config(bg=widget.normalCol))
 
 class Point(object):
 	'''For easier position handling
@@ -602,21 +607,44 @@ class NodeDatabase(object):
 	'''
 	def __init__(self, graphEditor):
 		self.graphEditor = graphEditor
-		self.menu = tk.Menu(self.graphEditor.bg)
+		self.menu = tk.Menu(self.graphEditor.bg) # when user right-clicks on background
+		
+		# node search related
+		self.nodesDict = {}
+		self.searchTerm = tk.StringVar()
+		self.searchTerm.trace('w', self.onSearching)
+		self.graphEditor.app.root.bind('<space>', lambda _: self.openSearch())
+		# make panel containing search field and result list
+		self.searchPanel = tk.Frame(self.graphEditor.bg, bg=COL_PRIM)
+		self.searchPanel.pack(side=tk.TOP)
+		self.searchPanel.pack_forget() # initially not visible
+		# search field
+		self.searchField = tk.Entry(self.searchPanel, textvariable=self.searchTerm, 
+			highlightthickness=0, bg=COL_BG, fg=COL_HL, bd=0, relief=tk.FLAT)
+		self.searchField.pack(padx=4, pady=(0, 4))
+		self.searchField.bind('<Escape>', self.closeSearch)
+		self.searchField.bind('<Return>', self.selectFirstResult)
+		# search result list
+		self.searchResults = tk.Frame(self.searchPanel, bg=COL_BG)
+		self.searchResults.pack(fill=tk.BOTH, expand=True)
+		
 		# catch internal nodes
-		self.makeNodeMenu(nodes, nodes.__name__, self.menu)
+		self.makeNodeMenu(nodes, nodes.__name__, self.menu, self.nodesDict)
 		try:
 			import external_nodes
 			# catch external nodes when available
-			self.makeNodeMenu(external_nodes, external_nodes.__name__, self.menu)
+			self.makeNodeMenu(external_nodes, external_nodes.__name__, self.menu, self.nodesDict)
 		except ImportError:
 			pass
 		# for faster access, skip the first menu when only 1 database was loaded
-		dbs = list(self.menu.children.values())
+		dbs = self.menu.winfo_children()
 		if len(dbs) == 1:
 			self.menu = dbs[0]
+		
+		# add search item
+		self.menu.add_command(label='Search...', underline=0, command=self.openSearch)
 	
-	def makeNodeMenu(self, member, pgkName, parentMenu):
+	def makeNodeMenu(self, member, pgkName, parentMenu, nodeDict={}):
 		'''Recursively calls to catch all nodes in the import hierarchy'''
 		# get import path (module) or class name (class)
 		memName = member.__name__ if hasattr(member, '__name__') else ''
@@ -634,10 +662,12 @@ class NodeDatabase(object):
 					break
 			if not itemName:
 				return
+			# insert in dictionary
+			nodePath = '{}.{}'.format(parentMenu.path, memName)
+			nodeDict[itemName] = nodePath
 			# make menu item
 			parentMenu.add_command(label=itemName, underline=0, 
-				command=lambda p='{}.{}'.format(parentMenu.path, memName): 
-				self.graphEditor.spawnNode(p))
+				command=lambda p=nodePath: self.graphEditor.spawnNode(p))
 		
 		# member is another module
 		if inspect.ismodule(member) and pgkName in memName:
@@ -649,7 +679,44 @@ class NodeDatabase(object):
 			# call for each sub-member
 			subMems = inspect.getmembers(member)
 			for mem in subMems:
-				self.makeNodeMenu(mem[1], pgkName, memMenu)
+				self.makeNodeMenu(mem[1], pgkName, memMenu, nodeDict)
+	
+	def showSearchResults(self, term):
+		'''Makes a list containing node names matching the searchterm'''
+		if not term:
+			return
+		# clear old results
+		for child in self.searchResults.winfo_children():
+			child.destroy()
+		# populate list with results
+		for nodeName, nodePath in self.nodesDict.items():
+			if term.lower() in nodeName.lower():
+				found = tk.Label(self.searchResults, text=nodeName, anchor='w', 
+					bg=COL_PRIM, fg=COL_HL, font=('Arial', 12))
+				setupHoverColor(found)
+				found.bind('<Button-1>', lambda e, p=nodePath: self.graphEditor.spawnNode(p))
+				found.pack(fill=tk.X)
+	
+	def openSearch(self):
+		'''Shows the search panel'''
+		self.searchPanel.pack()
+		self.searchField.focus()
+	
+	def closeSearch(self, e):
+		'''Resets search term hides the search panel'''
+		self.searchTerm.set('')
+		self.searchPanel.pack_forget()
+	
+	def onSearching(self, *args):
+		'''Shows the search panel'''
+		self.showSearchResults(self.searchTerm.get())
+	
+	def selectFirstResult(self, e):
+		'''Spawns first node in search result list'''
+		results = self.searchResults.winfo_children()
+		if results:
+			first = results[0]
+			self.graphEditor.spawnNode(self.nodesDict[first.cget('text')])
 
 
 class LogHandler(object):
@@ -823,6 +890,7 @@ class FlowApp(object):
 		# make button
 		img = tk.PhotoImage(file='{}/{}'.format(iconPath, icon))
 		btn = tk.Label(self.toolbar, image=img, bg=COL_PRIM)
+		setupHoverColor(btn)
 		btn.bind('<Button-1>', lambda _: callback()) # bind callback function
 		btn.image = img # to prevent garbage collection of the image
 		btn.pack(side=side)

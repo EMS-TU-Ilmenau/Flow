@@ -24,11 +24,12 @@ To use the [GUI](flow/gui.py), run [test_gui.py](test_gui.py):
 
 Open and save graphs using the **File menu**.
 You can add nodes by **right-clicking** on the dark background and choose a node from the tree.
-**Scroll** on the dark background to navigate in the graph.
+**Scroll** on the dark background to zoom and **Left drag** to pan the graph.
 Add more nodes and connect them or test what happens when you just hit the **run** button (the triangle without the pipe).
 When something seems broken, click the **step** button (triangle with pipe) to stop and step through the graph.
 You can click the **log** button (the bug) and step or run again to get detailed informations.
 You can reset or clear a graph using the other buttons.
+Press the **spacebar** or right click and choose "Search..." to search for nodes in the database.
 
 #### Porttypes
 The port types are just a rough orientation for the user when to connect nodes.
@@ -93,11 +94,11 @@ For more examples, have a look at the already existing [nodes](flow/nodes/).
 
 #### Hints
 - Only **[JSON](https://www.w3schools.com/js/js_json_datatypes.asp) compatible default values** must be passed as default values! For other porttypes, specify the `type` argument, e.g. type=ptype.COMPLEX.
-- When calling ``addInput``/``addOutput` an input/output object will be returned. It is strongly advised to **store the output as a class variable** like in the second example, as accessing it that way (later in the process method) is faster than via `getOutput`.
+- When calling `addInput`/`addOutput` an input/output object will be returned. It is strongly advised to **store the output as a class variable** like in the second example, as accessing it that way (later in the process method) is faster than via `getOutput`.
 - In order to load the node in the GUI, two things are of importance:
 	- The line `Node.__init__(self, 'My nodes name')` or `super(MyNode, self).__init__('My nodes name')` (you can use single or double quotes for the name)
 	- The class needs to be importable from the [nodes](flow/nodes/) directory in the package.
-- When an output is connected to more than one input, a deep copy of the data is passed to each extra connected input. This may be performance loss, but prevents a lot of trouble if data is of reference type and is intuitive for the user.
+- When an output is connected to more than one input, a deep copy of the data is automatically passed to each extra connected input. This may be performance loss, but prevents a lot of trouble if data is of reference type and is intuitive for the user.
 
 #### Make a new module or package
 When making a bunch of new node classes that are needed in a specific field (e.g. plotting, signal processing, device controls, ...) it is a good idea to make a new node package.
