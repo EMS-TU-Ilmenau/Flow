@@ -22,6 +22,8 @@ except:
 	import tkinter.filedialog as tkFileDialog
 	from tkinter.scrolledtext import ScrolledText
 
+log = logging.getLogger(__name__)
+
 # global design colors
 COL_BG = '#303030' # background
 COL_PRIM = '#505050' # primer/base (node body)
@@ -447,19 +449,35 @@ class GraphEditor(object):
 	
 	def fromDict(self, graphDict):
 		'''Creates a graph from a graph dictionary.'''
+		if not 'nodes' in graphDict:
+			log.error('No nodes in graph')
+			return
+		
 		# set zoom level
 		self.curZoom = graphDict.get('zoom', self.curZoom)
 		
 		# instantiate nodes from class
 		for nodeName, nodeEntry in graphDict['nodes'].items():
 			pos = nodeEntry.get('pos', [10, 10])
-			self.spawnNode(nodeEntry['class'], Point(*pos), nodeName)
+			try:
+				self.spawnNode(nodeEntry['class'], Point(*pos), nodeName)
+			except:
+				log.error('Class {} for node "{}" not in database'.format(
+					nodeEntry['class'], nodeName))
 		
 		# go through a second time to update default and connect
 		for nodeName, nodeEntry in graphDict['nodes'].items():
-			node = self.graph.nodeDict[nodeName] # get the already created node
+			try:
+				node = self.graph.nodeDict[nodeName] # get the already created node
+			except:
+				continue # related to error above
 			for input in node.inputs:
-				inputEntry = nodeEntry['inputs'][input.name]
+				try:
+					inputEntry = nodeEntry['inputs'][input.name]
+				except:
+					log.error('No setup for input "{}" of node "{}" in graph file'.format(
+						input.name, nodeName))
+					continue
 				# set default
 				input.default = inputEntry.get('default')
 				if input.visual.value:
@@ -467,10 +485,18 @@ class GraphEditor(object):
 				# set connection
 				conn = inputEntry.get('connection')
 				if conn:
-					connNode = self.graph.nodeDict[conn['node']]
+					try:
+						connNode = self.graph.nodeDict[conn['node']]
+					except:
+						continue # related to error above
 					connOutput = connNode.getOutput(conn['output'])
-					input.connect(connOutput)
-					input.visual.defaultVisible(False)
+					if connOutput:
+						input.connect(connOutput)
+						input.visual.defaultVisible(False)
+					else:
+						log.error('Node "{}" has no output "{}" which should be connected '
+							'to input "{}" of node "{}"'.format(
+							conn['node'], conn['output'], input.name, nodeName))
 		
 		# update visual connections slow but accurate
 		self.bg.update()
@@ -781,8 +807,7 @@ class FlowApp(object):
 					graphDict = json.loads(file.read()) # read file content as dict
 					self.graphEditor.fromDict(graphDict)
 				except:
-					logging.exception('Opening graph file failed') # with traceback
-					logging.error('Invalid or outdated graph file') # visible for the user
+					log.error('Invalid graph file')
 	
 	def onSave(self):
 		'''Saves the current graph as a json encoded file.'''
@@ -795,7 +820,7 @@ class FlowApp(object):
 	def onQuit(self):
 		# stop running graph
 		if not self.stopGraph():
-			logging.warning('The graph is still processing. Stopping it now')
+			log.warning('The graph is still processing. Stopping it now')
 			return
 		# quit the application
 		self.root.quit()
@@ -845,10 +870,10 @@ class FlowApp(object):
 		:returns: True when graph is not running, else False'''
 		if self.graphThread and self.graphThread.is_alive():
 			if self.graphStop.is_set():
-				logging.error('Already tried to stop graph')
+				log.error('Already tried to stop graph')
 				self.graphThread.join(5)
 				if self.graphThread.is_alive():
-					logging.fatal('Cannot stop graph')
+					log.fatal('Cannot stop graph')
 				else:
 					return True
 			else:
@@ -863,7 +888,7 @@ class FlowApp(object):
 			self.stats.set('{} | {:.2f} ms'.format(iterCount, 1e3*iterTime))
 		except:
 			self.stats.set('')
-			logging.exception('Graph processing failed')
+			log.exception('Graph processing failed')
 		self.graphEditor.updateResults() # update visual results
 		self.logHandler.tail()
 		stopper.clear()
@@ -899,7 +924,7 @@ class FlowApp(object):
 			self.graphEditor.updateResults()
 			self.logHandler.tail()
 		except:
-			logging.exception('Node {} failed to process'.format(node.name))
+			log.exception('Node {} failed to process'.format(node.name))
 		self.step += 1
 	
 	def onReset(self):
@@ -912,7 +937,7 @@ class FlowApp(object):
 		try:
 			self.graphEditor.graph.prepare()
 		except:
-			logging.exception('Preparing graph failed')
+			log.exception('Preparing graph failed')
 		self.graphEditor.updateResults()
 		# reset stepping
 		for node in self.graphEditor.graph.nodes:
