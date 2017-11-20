@@ -622,9 +622,9 @@ class NodeDatabase(object):
 		# search field
 		self.searchField = tk.Entry(self.searchPanel, textvariable=self.searchTerm, 
 			highlightthickness=0, bg=COL_BG, fg=COL_HL, bd=0, relief=tk.FLAT)
-		self.searchField.pack(padx=4, pady=(0, 4))
-		self.searchField.bind('<Escape>', self.closeSearch)
-		self.searchField.bind('<Return>', self.selectFirstResult)
+		self.searchField.pack(fill=tk.X, padx=4, pady=(0, 4))
+		self.searchField.bind('<Escape>', lambda _: self.closeSearch())
+		self.searchField.bind('<Return>', lambda _: self.selectFirstResult())
 		# search result list
 		self.searchResults = tk.Frame(self.searchPanel, bg=COL_BG)
 		self.searchResults.pack(fill=tk.BOTH, expand=True)
@@ -684,18 +684,18 @@ class NodeDatabase(object):
 	
 	def showSearchResults(self, term):
 		'''Makes a list containing node names matching the searchterm'''
-		if not term:
-			return
 		# clear old results
 		for child in self.searchResults.winfo_children():
 			child.destroy()
+		if not term:
+			return
 		# populate list with results
 		for nodeName, nodePath in self.nodesDict.items():
 			if term.lower() in nodeName.lower():
 				found = tk.Label(self.searchResults, text=nodeName, anchor='w', 
 					bg=COL_PRIM, fg=COL_HL, font=('Arial', 12))
 				setupHoverColor(found)
-				found.bind('<Button-1>', lambda e, p=nodePath: self.graphEditor.spawnNode(p))
+				found.bind('<Button-1>', lambda e, p=nodePath: self.selectResult(p))
 				found.pack(fill=tk.X)
 	
 	def openSearch(self):
@@ -703,7 +703,7 @@ class NodeDatabase(object):
 		self.searchPanel.pack()
 		self.searchField.focus_set()
 	
-	def closeSearch(self, e):
+	def closeSearch(self):
 		'''Resets search term hides the search panel'''
 		self.searchTerm.set('')
 		self.searchPanel.pack_forget()
@@ -713,12 +713,17 @@ class NodeDatabase(object):
 		'''Shows the search panel'''
 		self.showSearchResults(self.searchTerm.get())
 	
-	def selectFirstResult(self, e):
+	def selectFirstResult(self):
 		'''Spawns first node in search result list'''
 		results = self.searchResults.winfo_children()
 		if results:
 			first = results[0]
-			self.graphEditor.spawnNode(self.nodesDict[first.cget('text')])
+			self.selectResult(self.nodesDict[first.cget('text')])
+	
+	def selectResult(self, nodePath):
+		'''Spawns the node and closes the search'''
+		self.graphEditor.spawnNode(nodePath)
+		self.closeSearch()
 
 
 class LogHandler(object):
