@@ -80,7 +80,7 @@ class RangeSource(Node):
 			return []
 		# make array
 		n = abs(int(round((stop-start)/float(step))))
-		if n > 1:
+		if n > 0:
 			return [start + step*i for i in range(n+1)]
 		else:
 			return []
