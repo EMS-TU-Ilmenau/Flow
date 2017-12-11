@@ -3,7 +3,7 @@ import copy # for deep copying data when output pushes to multiple inputs
 
 log = logging.getLogger(__name__)
 
-class ptype(object):
+class Ptype(object):
 	'''Input and output port type identifiers
 	'''
 	OBJECT = 0 # generic/default
@@ -134,11 +134,11 @@ class InputPort(object):
 	or from default values.
 	'''
 	
-	def __init__(self, node, name='Input', default=None, type=ptype.OBJECT):
+	def __init__(self, node, name='Input', default=None, ptype=Ptype.OBJECT):
 		''':param node: the node this port belongs to
 		:param name: string name for this input. NO SPACES ALLOWED!!!
 		:param default: value used in case no data can be pulled
-		:param type: data type identifier (see ptype)
+		:param ptype: data type identifier (see Ptype)
 		'''
 		self.default = default
 		self.connOutput = None # the output of the connected node
@@ -148,10 +148,10 @@ class InputPort(object):
 		self.name = name
 		self.node = node
 		# auto assign data type
-		if default is not None and type is ptype.OBJECT:
-			self.type = ptype.fromObj(default)
+		if default is not None and ptype is Ptype.OBJECT:
+			self.ptype = Ptype.fromObj(default)
 		else:
-			self.type = type
+			self.ptype = ptype
 	
 	def connect(self, output):
 		''':param output: output port of a node to connect to'''
@@ -207,21 +207,21 @@ class OutputPort(object):
 	Holds connected node inputs and can connect and disconnect
 	'''
 	
-	def __init__(self, node, name='Output', type=ptype.OBJECT):
+	def __init__(self, node, name='Output', ptype=Ptype.OBJECT):
 		''':param node: the node this port belongs to
 		:param name: string name for this output. NO SPACES ALLOWED!!!
-		:param type: data type identifier
+		:param ptype: data type identifier
 		'''
 		self.connInputs = [] # list of inputs from connected nodes
 		self.result = None # should be used to catch final results for sink ports
 		self.name = name
 		self.node = node
-		self.type = type
+		self.ptype = ptype
 	
 	def connect(self, input):
 		''':param input: input port of a node to connect to'''
 		# check for datatype (probably just causes trouble (e.g. tuple vs. list))
-		if not (input.type is self.type or input.type is ptype.OBJECT or self.type is ptype.OBJECT):
+		if not (input.ptype is self.ptype or input.ptype is Ptype.OBJECT or self.ptype is Ptype.OBJECT):
 			logging.warning('Type of {}.{} might be incompatible with {}.{}'.format(
 				self.node.name, self.name, input.node.name, input.name))
 		# detach old connection of target input

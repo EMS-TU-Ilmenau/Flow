@@ -1,4 +1,4 @@
-from flow.node import Node, ptype
+from flow.node import Node, Ptype
 import math # for float operations
 
 class Operation(Node):
@@ -50,7 +50,7 @@ class Exp(Node):
 	def __init__(self):
 		super(Exp, self).__init__('Exponent')
 		self.addInput('x', 0.)
-		self.resOut = self.addOutput('exp', ptype.FLOAT)
+		self.resOut = self.addOutput('exp', Ptype.FLOAT)
 	
 	def process(self, x):
 		self.resOut.push(math.exp(x))
@@ -61,7 +61,7 @@ class Log(Node):
 		super(Log, self).__init__('Logarithm')
 		self.addInput('x', 1.)
 		self.addInput('base', 10.)
-		self.resOut = self.addOutput('log', ptype.FLOAT)
+		self.resOut = self.addOutput('log', Ptype.FLOAT)
 	
 	def process(self, x, base):
 		self.resOut.push(math.log(x, base))
@@ -78,7 +78,7 @@ class AngleTo(AngleFunc):
 	def __init__(self, name):
 		super(AngleTo, self).__init__(name)
 		self.addInput('angle', 0.)
-		self.resOut = self.addOutput('value', ptype.FLOAT)
+		self.resOut = self.addOutput('value', Ptype.FLOAT)
 	
 	def process(self, deg, hyperb, angle):
 		if deg:
@@ -91,7 +91,7 @@ class ToAngle(AngleFunc):
 	def __init__(self, name):
 		super(ToAngle, self).__init__(name)
 		self.addInput('value', 0.)
-		self.resOut = self.addOutput('angle', ptype.FLOAT)
+		self.resOut = self.addOutput('angle', Ptype.FLOAT)
 	
 	def process(self, deg, hyperb, value):
 		# hyperFunc and angleFunc have to be defined by inheritated class!

@@ -1,4 +1,4 @@
-from flow.node import Node, ptype
+from flow.node import Node, Ptype
 import time # for the pause node
 import json # for the dict/str converter nodes
 
@@ -6,9 +6,9 @@ class StrSplit(Node):
 	'''Splits a string by delimiter and pushes out the separated string parts'''
 	def __init__(self):
 		super(StrSplit, self).__init__('String split')
-		self.addInput('string', type=ptype.STR)
+		self.addInput('string', ptype=Ptype.STR)
 		self.addInput('delimiter', ',')
-		self.strOut = self.addOutput('parts', ptype.STR)
+		self.strOut = self.addOutput('parts', Ptype.STR)
 	
 	def process(self, string, delimiter):
 		for part in string.split(delimiter):
@@ -18,10 +18,10 @@ class StrReplace(Node):
 	'''Replaces a pattern in a string'''
 	def __init__(self):
 		super(StrReplace, self).__init__('String replace')
-		self.addInput('string', type=ptype.STR)
+		self.addInput('string', ptype=Ptype.STR)
 		self.addInput('find', ';')
 		self.addInput('replace', ',')
-		self.strOut = self.addOutput('modified', ptype.STR)
+		self.strOut = self.addOutput('modified', Ptype.STR)
 	
 	def process(self, string, find, replace):
 		self.strOut.push(string.replace(find, replace))
@@ -30,8 +30,8 @@ class StrToDict(Node):
 	'''Converts a JSON formatted string to to a dictionary'''
 	def __init__(self):
 		super(StrToDict, self).__init__('String to dictionary')
-		self.addInput('string', type=ptype.STR)
-		self.dictOut = self.addOutput('dictionary', ptype.DICT)
+		self.addInput('string', ptype=Ptype.STR)
+		self.dictOut = self.addOutput('dictionary', Ptype.DICT)
 	
 	def process(self, string):
 		try:
@@ -43,8 +43,8 @@ class DictToStr(Node):
 	'''Converts dictionary to a JSON formatted string'''
 	def __init__(self):
 		super(DictToStr, self).__init__('Dictionary to string')
-		self.addInput('dictionary', type=ptype.DICT)
-		self.strOut = self.addOutput('string', ptype.STR)
+		self.addInput('dictionary', ptype=Ptype.DICT)
+		self.strOut = self.addOutput('string', Ptype.STR)
 	
 	def process(self, dictionary):
 		try:
@@ -62,7 +62,7 @@ class PackArray(Node):
 		# build inputs and outputs
 		self.dataIn = self.addInput('elements')
 		self.addInput('length', 0)
-		self.arrOut = self.addOutput('array', ptype.LIST)
+		self.arrOut = self.addOutput('array', Ptype.LIST)
 	
 	def prepare(self):
 		# for collecting the elements
@@ -85,7 +85,7 @@ class UnpackArray(Node):
 	It basically just unpacks the array'''
 	def __init__(self):
 		super(UnpackArray, self).__init__('Unpack array')
-		self.addInput('array', type=ptype.LIST)
+		self.addInput('array', ptype=Ptype.LIST)
 		self.elOut = self.addOutput('elements')
 	
 	def process(self, array):
@@ -96,7 +96,7 @@ class IndexToValue(Node):
 	'''Get a value based on index from an array'''
 	def __init__(self):
 		super(IndexToValue, self).__init__('Array value')
-		self.addInput('array', type=ptype.LIST)
+		self.addInput('array', ptype=Ptype.LIST)
 		self.addInput('index', -1)
 		self.valOut = self.addOutput('value')
 	
@@ -110,9 +110,9 @@ class ValueToIndex(Node):
 	'''Get an index based on value from an array'''
 	def __init__(self):
 		super(ValueToIndex, self).__init__('Array index')
-		self.addInput('array', type=ptype.LIST)
+		self.addInput('array', ptype=Ptype.LIST)
 		self.addInput('value')
-		self.indOut = self.addOutput('index', ptype.INT)
+		self.indOut = self.addOutput('index', Ptype.INT)
 	
 	def process(self, array, value):
 		if value in array:
@@ -122,9 +122,9 @@ class ArrayMax(Node):
 	'''Get the maximum value and corresponding index from an array'''
 	def __init__(self):
 		super(ArrayMax, self).__init__('Maximum in array')
-		self.addInput('array', type=ptype.LIST)
+		self.addInput('array', ptype=Ptype.LIST)
 		self.valOut = self.addOutput('value')
-		self.indOut = self.addOutput('index', ptype.INT)
+		self.indOut = self.addOutput('index', Ptype.INT)
 	
 	def process(self, array):
 		val = max(array)
@@ -135,9 +135,9 @@ class ArrayMin(Node):
 	'''Get the minimum value and corresponding index from an array'''
 	def __init__(self):
 		super(ArrayMin, self).__init__('Minimum in array')
-		self.addInput('array', type=ptype.LIST)
+		self.addInput('array', ptype=Ptype.LIST)
 		self.valOut = self.addOutput('value')
-		self.indOut = self.addOutput('index', ptype.INT)
+		self.indOut = self.addOutput('index', Ptype.INT)
 	
 	def process(self, array):
 		val = min(array)
@@ -148,8 +148,8 @@ class ArrayLength(Node):
 	'''Get the length an array'''
 	def __init__(self):
 		super(ArrayLength, self).__init__('Array length')
-		self.addInput('array', type=ptype.LIST)
-		self.lenOut = self.addOutput('length', ptype.INT)
+		self.addInput('array', ptype=Ptype.LIST)
+		self.lenOut = self.addOutput('length', Ptype.INT)
 	
 	def process(self, array):
 		self.lenOut.push(len(array))
@@ -160,7 +160,7 @@ class ArrayAppend(Node):
 		Node.__init__(self, 'Append to Array')
 		self.arrIn = self.addInput('array', [])
 		self.addInput('data')
-		self.arrOut = self.addOutput('array', ptype.LIST)
+		self.arrOut = self.addOutput('array', Ptype.LIST)
 	
 	def prepare(self):
 		self.arrIn.default = [] # to clean reference
@@ -173,9 +173,9 @@ class ArrayRemove(Node):
 	'''Removes an element of an array'''
 	def __init__(self):
 		Node.__init__(self, 'Remove from Array')
-		self.addInput('array', type=ptype.LIST)
+		self.addInput('array', ptype=Ptype.LIST)
 		self.addInput('data')
-		self.arrOut = self.addOutput('array', ptype.LIST)
+		self.arrOut = self.addOutput('array', Ptype.LIST)
 	
 	def process(self, array, data):
 		array.remove(data)

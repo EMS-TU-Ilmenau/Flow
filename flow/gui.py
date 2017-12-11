@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from .graph import Graph # for building the flow graph
-from .node import ptype # for identifying port data types
+from .node import Ptype # for identifying port data types
 from . import nodes # the node database
 import os # for making icon file path to load icons in package
 import json # for parsing JSON formatted graph files
@@ -33,16 +33,16 @@ COL_HL = '#F0F0F0' # highlights (most text)
 COL_DATA = '#A0A0A0' # default and result value texts
 # port data type colors
 COL_DTYPE = {
-	ptype.OBJECT: '#D0D0D0', 
-	ptype.BOOL: '#101010', 
-	ptype.INT: '#0080FF', 
-	ptype.FLOAT: '#25D4EF', 
-	ptype.COMPLEX: '#AC58FA', 
-	ptype.DICT: '#E93333', 
-	ptype.LIST: '#FF8000', 
-	ptype.TUPLE: '#FFD500', 
-	ptype.STR: '#7AC137', 
-	ptype.FILE: '#198B4A'}
+	Ptype.OBJECT: '#D0D0D0', 
+	Ptype.BOOL: '#101010', 
+	Ptype.INT: '#0080FF', 
+	Ptype.FLOAT: '#25D4EF', 
+	Ptype.COMPLEX: '#AC58FA', 
+	Ptype.DICT: '#E93333', 
+	Ptype.LIST: '#FF8000', 
+	Ptype.TUPLE: '#FFD500', 
+	Ptype.STR: '#7AC137', 
+	Ptype.FILE: '#198B4A'}
 
 def setupHoverColor(widget, hoverCol=COL_MAIN):
 	'''Add bindings to a widget to change its background color upon hover'''
@@ -158,7 +158,7 @@ class InputVisual(object):
 		
 		# add port with color for data type
 		self.port = tk.Label(self.body, text=u'⚬', font=font, bg=COL_PRIM, 
-			fg=COL_DTYPE.get(self.input.type, COL_DTYPE[ptype.OBJECT]), 
+			fg=COL_DTYPE.get(self.input.ptype, COL_DTYPE[Ptype.OBJECT]), 
 			cursor='crosshair')
 		self.port.pack(side=tk.LEFT)
 		self.port.input = self # retrieve with: getattr(widget, 'input', None)
@@ -176,19 +176,19 @@ class InputVisual(object):
 		if self.input.default is None:
 			return
 		# add default value based on data type
-		if self.input.type in (ptype.STR, ptype.FILE):
+		if self.input.ptype in (Ptype.STR, Ptype.FILE):
 			# string
 			self.value = tk.StringVar()
 			self.default = tk.Entry(self.body, textvariable=self.value)
 			# file
-			if self.input.type is ptype.FILE:
+			if self.input.ptype is Ptype.FILE:
 				self.title.bind('<Button-1>', self.openFile)
 				self.title.bind('<Button-2>', self.saveFile)
 				self.title.bind('<Button-3>', self.saveFile)
 				self.title.config(cursor='bottom_side')
-		elif self.input.type in (ptype.INT, ptype.FLOAT):
+		elif self.input.ptype in (Ptype.INT, Ptype.FLOAT):
 			# int and float
-			if self.input.type is ptype.INT:
+			if self.input.ptype is Ptype.INT:
 				self.value = tk.IntVar()
 			else:
 				self.value = tk.DoubleVar()
@@ -197,7 +197,7 @@ class InputVisual(object):
 			self.title.bind('<Button-1>', self.startAdjustNum)
 			self.title.bind('<B1-Motion>', self.adjustNum)
 			self.title.config(cursor='sb_h_double_arrow')
-		elif self.input.type is ptype.BOOL:
+		elif self.input.ptype is Ptype.BOOL:
 			# bool
 			self.value = tk.BooleanVar()
 			self.default = tk.Checkbutton(self.body, variable=self.value)
@@ -266,7 +266,7 @@ class OutputVisual(object):
 		
 		# add port with color for data type
 		self.port = tk.Label(self.body, text='⚬', font=font, bg=COL_PRIM, 
-			fg=COL_DTYPE.get(self.output.type, COL_DTYPE[ptype.OBJECT]), 
+			fg=COL_DTYPE.get(self.output.ptype, COL_DTYPE[Ptype.OBJECT]), 
 			cursor='crosshair')
 		self.port.pack(side=tk.RIGHT)
 		self.port.output = self

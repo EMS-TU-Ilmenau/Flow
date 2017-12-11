@@ -1,4 +1,4 @@
-from flow.node import Node, ptype
+from flow.node import Node, Ptype
 
 class IntegerSource(Node):
 	'''Provides a integer number on its output'''
@@ -7,7 +7,7 @@ class IntegerSource(Node):
 		# Automatically assign same datatype to output as the input 
 		# by parsing the default value during addInput.
 		input = self.addInput('value', 0)
-		self.srcOut = self.addOutput('int', input.type)
+		self.srcOut = self.addOutput('int', input.ptype)
 	
 	def process(self, value):
 		self.srcOut.push(int(value))
@@ -17,7 +17,7 @@ class FloatSource(Node):
 	def __init__(self):
 		super(FloatSource, self).__init__('Float out')
 		input = self.addInput('value', 0.0)
-		self.srcOut = self.addOutput('float', input.type)
+		self.srcOut = self.addOutput('float', input.ptype)
 	
 	def process(self, value):
 		self.srcOut.push(float(value))
@@ -27,7 +27,7 @@ class BooleanSource(Node):
 	def __init__(self):
 		super(BooleanSource, self).__init__('Bool out')
 		input = self.addInput('value', True)
-		self.srcOut = self.addOutput('bool', input.type)
+		self.srcOut = self.addOutput('bool', input.ptype)
 	
 	def process(self, value):
 		self.srcOut.push(True if value else False)
@@ -37,7 +37,7 @@ class StringSource(Node):
 	def __init__(self):
 		super(StringSource, self).__init__('String out')
 		input = self.addInput('value', 'Hello')
-		self.srcOut = self.addOutput('string', input.type)
+		self.srcOut = self.addOutput('string', input.ptype)
 	
 	def process(self, value):
 		self.srcOut.push(str(value))
@@ -48,7 +48,7 @@ class ComplexSource(Node):
 		super(ComplexSource, self).__init__('Complex out')
 		self.addInput('re', 0.0)
 		self.addInput('im', 0.0)
-		self.complexOut = self.addOutput('complex', ptype.COMPLEX)
+		self.complexOut = self.addOutput('complex', Ptype.COMPLEX)
 	
 	def process(self, re, im):
 		self.complexOut.push(complex(re, im))
@@ -69,8 +69,8 @@ class RangeSource(Node):
 	'''Abstract class for range sources'''
 	def __init__(self, name):
 		super(RangeSource, self).__init__(name)
-		self.arrOut = self.addOutput('array', ptype.LIST)
-		self.lenOut = self.addOutput('length', ptype.INT)
+		self.arrOut = self.addOutput('array', Ptype.LIST)
+		self.lenOut = self.addOutput('length', Ptype.INT)
 	
 	def seq(self, start, stop, step=1):
 		# sanity checks
@@ -111,8 +111,8 @@ class FileSource(Node):
 	and pushes out the line strings'''
 	def __init__(self):
 		super(FileSource, self).__init__('File source')
-		self.addInput('filepath', '/Path/To/File.suffix', type=ptype.FILE)
-		self.lineOut = self.addOutput('line', ptype.STR)
+		self.addInput('filepath', '/Path/To/File.suffix', ptype=Ptype.FILE)
+		self.lineOut = self.addOutput('line', Ptype.STR)
 	
 	def process(self, filepath):
 		# push out all lines in one iteration

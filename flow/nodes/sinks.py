@@ -1,11 +1,11 @@
-from flow.node import Node, ptype
+from flow.node import Node, Ptype
 
 class Print(Node):
 	'''Formats input data as string'''
 	def __init__(self):
 		super(Print, self).__init__('Print')
 		self.addInput('data')
-		self.strOut = self.addOutput('formatted', ptype.STR)
+		self.strOut = self.addOutput('formatted', Ptype.STR)
 	
 	def process(self, data):
 		self.strOut.push('{}'.format(data))
@@ -17,7 +17,7 @@ class DictSink(Node):
 		self.dictIn = self.addInput('dictionary', {})
 		self.addInput('key', 'key')
 		self.addInput('value')
-		self.dictOut = self.addOutput('dictionary', ptype.DICT)
+		self.dictOut = self.addOutput('dictionary', Ptype.DICT)
 	
 	def prepare(self):
 		self.dictIn.default = {} # to clean reference
@@ -31,11 +31,11 @@ class FileSink(Node):
 	specified by a path string input'''
 	def __init__(self):
 		super(FileSink, self).__init__('File sink')
-		self.addInput('string', type=ptype.STR)
-		self.addInput('filepath', '/Path/To/File.suffix', type=ptype.FILE)
+		self.addInput('string', ptype=Ptype.STR)
+		self.addInput('filepath', '/Path/To/File.suffix', ptype=Ptype.FILE)
 		self.addInput('lines', False) # adding linefeed or not
 		# only technical needed to have a result value (the path when finished)
-		self.pathOut = self.addOutput('filepath', ptype.STR)
+		self.pathOut = self.addOutput('filepath', Ptype.STR)
 		# for faster processing, we let the file object open until the graph finished.
 		# alternatively, open and close it in the process method, using "with"
 		self.file = None
