@@ -1,4 +1,3 @@
-from . import nodes # for instantiating nodes
 import json # for parsing JSON formatted graph files
 import time # for measuring processing time
 import logging # for debugging the dataflow

@@ -4,3 +4,5 @@ from __future__ import nested_scopes, generators, with_statement, unicode_litera
 # import from modules for fast access
 from .graph import Graph
 from .node import Node
+# standard node database
+from . import nodes
