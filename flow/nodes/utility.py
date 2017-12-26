@@ -194,6 +194,21 @@ class Replicate(Node):
 		for _ in range(n):
 			self.repOut.push(data)
 
+class Trigger(Node):
+	'''Gates data behind any data at trigger port'''
+	def __init__(self):
+		super(Trigger, self).__init__('Trigger')
+		self.dataIn = self.addInput('data')
+		self.addInput('trigger')
+		self.addInput('sync', False)
+		self.repOut = self.addOutput('data')
+	
+	def process(self, data, trigger, sync):
+		self.repOut.push(data)
+		if not sync and not self.dataIn.buffer:
+			# append old data to buffer again until fresh data is coming
+			self.dataIn.buffer.append(data)
+
 class Pause(Node):
 	'''Sleeps blocking for specified seconds'''
 	def __init__(self):
