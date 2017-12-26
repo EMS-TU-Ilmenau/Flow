@@ -1,0 +1,102 @@
+{
+    "nodes": {
+        "Int out": {
+            "inputs": {
+                "value": {
+                    "default": 3, 
+                    "connection": null
+                }
+            }, 
+            "pos": [
+                154, 
+                66
+            ], 
+            "class": "flow.nodes.sources.IntegerSource"
+        }, 
+        "Pack array": {
+            "inputs": {
+                "length": {
+                    "default": 0, 
+                    "connection": null
+                }, 
+                "elements": {
+                    "default": null, 
+                    "connection": {
+                        "node": "Trigger", 
+                        "output": "data"
+                    }
+                }
+            }, 
+            "pos": [
+                472, 
+                253
+            ], 
+            "class": "flow.nodes.utility.PackArray"
+        }, 
+        "Trigger": {
+            "inputs": {
+                "trigger": {
+                    "default": null, 
+                    "connection": {
+                        "node": "Unpack array", 
+                        "output": "elements"
+                    }
+                }, 
+                "data": {
+                    "default": null, 
+                    "connection": {
+                        "node": "Int out", 
+                        "output": "int"
+                    }
+                }, 
+                "sync": {
+                    "default": false, 
+                    "connection": null
+                }
+            }, 
+            "pos": [
+                345, 
+                166
+            ], 
+            "class": "flow.nodes.utility.Trigger"
+        }, 
+        "Unpack array": {
+            "inputs": {
+                "array": {
+                    "default": null, 
+                    "connection": {
+                        "node": "Float range out", 
+                        "output": "array"
+                    }
+                }
+            }, 
+            "pos": [
+                197, 
+                214
+            ], 
+            "class": "flow.nodes.utility.UnpackArray"
+        }, 
+        "Float range out": {
+            "inputs": {
+                "start": {
+                    "default": 0.0, 
+                    "connection": null
+                }, 
+                "step": {
+                    "default": 0.25, 
+                    "connection": null
+                }, 
+                "stop": {
+                    "default": 1.0, 
+                    "connection": null
+                }
+            }, 
+            "pos": [
+                55, 
+                179
+            ], 
+            "class": "flow.nodes.sources.FloatRangeSource"
+        }
+    }, 
+    "zoom": 1.0
+}
