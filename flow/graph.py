@@ -294,10 +294,6 @@ class Graph(object):
 			for node in self.nodesRunOrder:
 				node.collect()
 			
-			# some metrics for performance analysis
-			iterTime = time.clock()-startTime
-			iterCount += 1
-			
 			# abort conditions
 			if self.nothingToDo():
 				break
@@ -305,6 +301,10 @@ class Graph(object):
 			if abort:
 				if abort.is_set():
 					break
+			
+			# some metrics for performance analysis
+			iterTime = time.clock()-startTime
+			iterCount += 1
 		
 		# processing finished
 		log.info('Finished. Took {:.3f} ms and {} iterations'.format(iterTime*1e3, iterCount))
