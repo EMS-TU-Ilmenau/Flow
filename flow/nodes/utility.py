@@ -200,12 +200,12 @@ class Trigger(Node):
 		super(Trigger, self).__init__('Trigger')
 		self.dataIn = self.addInput('data')
 		self.addInput('trigger')
-		self.addInput('sync', False)
+		self.addInput('reuseLatestData', False)
 		self.repOut = self.addOutput('data')
 	
-	def process(self, data, trigger, sync):
+	def process(self, data, trigger, reuseLatestData):
 		self.repOut.push(data)
-		if not sync and not self.dataIn.buffer:
+		if not reuseLatestData and not self.dataIn.buffer:
 			# append old data to buffer again until fresh data is coming
 			self.dataIn.buffer.append(data)
 
