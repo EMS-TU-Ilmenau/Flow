@@ -57,7 +57,7 @@
                         "output": "array"
                     }
                 }, 
-                "reuseLatestData": {
+                "reuseOldData": {
                     "default": true, 
                     "connection": null
                 }
