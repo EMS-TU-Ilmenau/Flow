@@ -1,5 +1,6 @@
 from flow.node import Node, Ptype
 import time # for the pause node
+from datetime import datetime # for getting timestamps
 import json # for the dict/str converter nodes
 
 class StrSplit(Node):
@@ -220,3 +221,16 @@ class Pause(Node):
 	def process(self, data, sleep):
 		time.sleep(sleep)
 		self.dataOut.push(data)
+
+class Timestamp(Node):
+	'''Pushes a UTC timestamp out for every data incoming'''
+	def __init__(self):
+		Node.__init__(self, 'Timestamp')
+		self.addInput('data')
+		self.dataOut = self.addOutput('data')
+		self.tsOut = self.addOutput('timestamp', Ptype.float)
+	
+	def process(self, data):
+		ts = (datetime.utcnow() - datetime.utcfromtimestamp(0)).total_seconds()
+		self.dataOut.push(data)
+		self.tsOut.push(ts)
