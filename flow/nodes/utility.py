@@ -228,7 +228,7 @@ class Timestamp(Node):
 		Node.__init__(self, 'Timestamp')
 		self.addInput('data')
 		self.dataOut = self.addOutput('data')
-		self.tsOut = self.addOutput('timestamp', Ptype.float)
+		self.tsOut = self.addOutput('timestamp', Ptype.FLOAT)
 	
 	def process(self, data):
 		ts = (datetime.utcnow() - datetime.utcfromtimestamp(0)).total_seconds()
