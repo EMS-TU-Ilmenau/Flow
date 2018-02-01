@@ -1,5 +1,6 @@
 from flow.node import Node, Ptype
 import time # for the pause node
+import platform # for choosing the best clock timing per OS
 from datetime import datetime # for getting timestamps
 import json # for the dict/str converter nodes
 
@@ -215,11 +216,26 @@ class Pause(Node):
 	def __init__(self):
 		super(Pause, self).__init__('Pause')
 		self.addInput('data')
-		self.addInput('sleep', 1.)
+		self.addInput('durationSec', 1.)
+		self.addInput('clock', False)
 		self.dataOut = self.addOutput('data')
+		# for the clock mode (ensure cycle time length)
+		self.sampler = 0.
+		self.wait = self.bruteforceWait if platform.system() == 'Windows' else self.sleepWait
 	
-	def process(self, data, sleep):
-		time.sleep(sleep)
+	def bruteforceWait(self, period):
+		while self.sampler > time.clock(): pass
+		self.sampler = time.clock()+period
+	
+	def sleepWait(self, period):
+		time.sleep(max(0., self.sampler-time.time()))
+		self.sampler = time.time()+period
+	
+	def process(self, data, durationSec, clock):
+		if clock:
+			self.wait(durationSec)
+		else:
+			time.sleep(durationSec)
 		self.dataOut.push(data)
 
 class Timestamp(Node):
