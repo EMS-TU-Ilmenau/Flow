@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from .graph import Graph # for building the flow graph
+from .graph import Graph, shortString # for building the flow graph
 from .node import Ptype # for identifying port data types
 from . import nodes # the node database
 import os # for making icon file path to load icons in package
@@ -287,10 +287,9 @@ class OutputVisual(object):
 	
 	def setResult(self):
 		'''updates the view to display the ports result'''
-		resStr = str(self.output.result) # result formatted as string
-		maxLen = 40
-		self.value.set('{}...{}'.format(resStr[:maxLen/2], resStr[-maxLen/2:]) if len(resStr) > maxLen else resStr)
-		self.resultVisible(True if self.output.result is not None else False)
+		resultString = shortString(self.output.result)
+		self.value.set(resultString)
+		self.resultVisible(True if resultString else False)
 	
 	def resultVisible(self, visible):
 		''':param visible: True or False to show/hide result'''

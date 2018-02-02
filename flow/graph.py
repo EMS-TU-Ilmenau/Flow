@@ -5,6 +5,18 @@ import importlib, inspect # for instantiating nodes from class path
 
 log = logging.getLogger(__name__)
 
+def shortString(data, maxLen=40):
+	''':param data: any data whoch can be converted to a string
+	:param maxLen: maximum string length to output
+	:returns: data as shortened string, showing only beginning and end'''
+	dataStr = str(data)
+	if dataStr == 'None':
+		return ''
+	if len(dataStr) > maxLen:
+		return '{}...{}'.format(dataStr[:maxLen/2], dataStr[-maxLen/2:])
+	else:
+		return dataStr
+
 def uniqueName(names, name):
 	''':param names: list of string names
 	:param name: name which needs to be different from the names in the list
@@ -44,17 +56,24 @@ class Graph(object):
 		'''Shows the current nodes and their connections as string.'''
 		str = 'Nodes:'
 		for node in self.nodes:
+			# node name
 			str += '\n\n{}'.format(node.name)
 			for input in node.inputs:
+				# format inputs name and default
+				defaultStr = shortString(input.default)
 				str += '\n> {}{}'.format(input.name, 
-					':{}'.format(input.default) if input.default else '')
+					':{}'.format(defaultStr) if defaultStr else '')
 				if input.isConnected():
+					# format input connection
 					str += ' o-o {}.{}'.format(
 						input.connOutput.node.name, input.connOutput.name)
 			for output in node.outputs:
+				# format outputs name and result
+				resultStr = shortString(output.result)
 				str += '\n< {}{}'.format(output.name, 
-					':{}'.format(output.result) if output.result else '')
+					':{}'.format(resultStr) if resultStr else '')
 				if output.isConnected():
+					# format output connections
 					str += ' o-o '
 					str += ', '.join('{}.{}'.format(
 						ci.node.name, ci.name) for ci in output.connInputs)
