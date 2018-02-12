@@ -46,11 +46,13 @@ class DictToStr(Node):
 	def __init__(self):
 		super(DictToStr, self).__init__('Dictionary to string')
 		self.addInput('dictionary', ptype=Ptype.DICT)
+		self.addInput('oneLine', False)
 		self.strOut = self.addOutput('string', Ptype.STR)
 	
-	def process(self, dictionary):
+	def process(self, dictionary, oneLine):
 		try:
-			self.strOut.push(json.dumps(dictionary, indent=4))
+			pretty = None if oneLine else 4 # indent lines or not
+			self.strOut.push(json.dumps(dictionary, indent=pretty))
 		except:
 			raise Error('{} cannot convert {:.50}... to a string'.format(self.name, dictionary))
 
