@@ -12,6 +12,9 @@ Clone the repository and change to that directory.
 
 Optionally, install the package using `pip install .` or `pip install --user .`
 
+No dependencies needed, even for the GUI.
+Runs on Python 2 and 3 and macOS, Linux and Windows.
+
 #### Backend
 To use the backend ([graph](flow/graph.py) and [node](flow/node.py)) without the GUI, run [test_graph.py](test_graph.py) with a graph file as argument:
 
@@ -70,7 +73,7 @@ This node will just forward any data it gets on input a to output b.
 Here is a better example:
 
 ```python
-from flow.node import Node, ptype
+from flow.node import Node, Ptype
 
 class MyNode(Node):
 	def __init__(self):
@@ -78,9 +81,9 @@ class MyNode(Node):
 		# add some inputs, but at least 1
 		self.addInput('someInput') # no spaces allowed for input names
 		self.addInput('other', 3.0) # default defines porttype automatically
-		self.addInput('bla', type=ptype.BOOL) # no default, but type specified
+		self.addInput('bla', ptype=Ptype.BOOL) # no default, but type specified
 		# add some outputs, but at least 1
-		self.myOut = self.addOutput('out', ptype.STR) # string type specified
+		self.myOut = self.addOutput('out', Ptype.STR) # string type specified
 	
 	def process(self, someInput, other, bla):
 		# process inputs
@@ -93,7 +96,7 @@ This node will format all inputs in a string which is pushed out from the output
 For more examples, have a look at the already existing [nodes](flow/nodes/).
 
 #### Hints
-- Only **[JSON](https://www.w3schools.com/js/js_json_datatypes.asp) compatible default values** must be passed as default values! For other porttypes, specify the `type` argument, e.g. type=ptype.COMPLEX.
+- Only **[JSON](https://www.w3schools.com/js/js_json_datatypes.asp) compatible default values** must be passed as default values! For other porttypes, specify the `ptype` argument, e.g. ptype=Ptype.COMPLEX.
 - When calling `addInput`/`addOutput` an input/output object will be returned. It is strongly advised to **store the output as a class variable** like in the second example, as accessing it that way (later in the process method) is faster than via `getOutput`.
 - In order to load the node in the GUI, two things are of importance:
 	- The line `Node.__init__(self, 'My nodes name')` or `super(MyNode, self).__init__('My nodes name')` (you can use single or double quotes for the name)
@@ -110,7 +113,7 @@ Let's say we want to make a module `my_fancy_nodes.py` in its own package `my_fa
 - Create a folder in `nodes` and name it `my_fancy_lib`.
 - Open the `__init__.py` file in `nodes` and add `from . import my_fancy_lib` to the end. Save, close.
 - Enter the newly created folder and create a file named `my_fancy_nodes.py`.
-- Open the file and write `from flow.node import Node, ptype`, then add your node class as described above. Save, close.
+- Open the file and write `from flow.node import Node, Ptype`, then add your node class as described above. Save, close.
 - Create a `__init__.py` file in the same folder.
 - Open the file and write `from . import my_fancy_nodes`. Save, close.
 
