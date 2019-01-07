@@ -130,27 +130,27 @@ Right-click in the editor and the pop-up menu will show the newly created hierar
 - Add a new line with `del my_fancy_nodes`. Save, close.
 
 ## Concept
-The general concept is called **flow based programming** (FBP). 
+The general concept is called *flow based programming* (**FBP**). 
 It allows to handle data as if they are signals in the real world by connecting **inputs** and **outputs** of **nodes** together in a **graph**, like connecting devices via cables. 
 This makes it intuitive for an end-user to build algorithms without programming. 
 It is also useful for fast prototyping because useful code snippets is already there and have to be combined only.
 
 This implementation transports data between the nodes and stores them in the inputs **buffer**. 
-The node calls a **process** function when the data is synchronized and **pulled** from inputs.
+The node calls a **process** function when the data is synchronized and **pulled** from the buffer.
 Depending on the nodes purpose, processed data is **pushed** to the output(s). 
-An output pushes data to all **connected** inputs, where it is queued in the input buffer.
+An output pushes data to all **connected** inputs, where it is queued in their buffers.
 
 Inputs have another data source, the **default** value, which is used for special cases. 
 If the input is **disconnected**, i.e. no pipe attached, the default value gets visible in the GUI and the user can enter a value based on the **port type**. 
-The default value is used **once** when the input is not connected or when the input is part of a **loop** and no package is in the buffer.
+The default value is used **once** when the input is not connected or when the input is part of a **loop** and no data is in the buffer.
 It is also used **always** when other inputs of the node have data in their buffers. 
-pers can use this in conjuction with pulling, when input data should be processed synchronized and no pull should be wasted.
+Users can use this in conjuction with pulling, when input data should be processed synchronized and no pull should be wasted.
 
 Outputs push data to a **result** if the port is not connected. 
 
 #### Why not backward recursion?
 A similar concept would be to recursively pull data from the nodes, starting from the sinks, until the sources are reached.
-This sounds easy and fast, but there are some problems with that concept:
+This sounds easy and fast, but there are some **problems** with that concept:
 
 **Interface on output level**:
 How would that concept be implemented? Each output would have a pull method, which would get the results from an output specific process method, that would pull from inputs which pull from connected outputs, etc.
@@ -170,29 +170,15 @@ Imagine a node generating a random sample on each pull request.
 When multiple connected nodes pull from that noise-generator, the data is not synchronized.
 
 ## Third party packages
-The project is very generic, as any python code can be inside the node.
-That means one could use the node editor primarily for signal processing, while someone else might use it for device controls/measurements or image processing as e.g. in Blender.
-Most nodes will probably be just interfaces for already existing, mighty functions or classes from third party packages like fastmat, numpy or matplotlib.
-That means a lot of third party code to install, which might not be needed for the other fields.
+The existing nodes are quite generic and merely examples for demonstration purposes.
 
-Therefore, only generic and standard library only nodes should be pushed to this project if any.
-The existing nodes are merely examples and for demonstration purposes.
-
-For real applications, proceed as follow:
+For real projects, proceed as follow:
 - Install this project using `pip install .` or `pip install --user .` after `cd` to the cloned project
-- In your own project (the real application), make sure the minial file structure is as follows:
+- Create one or more node packages as described [above](#-Make-a-new-module-or-package)
+- In your GUI starter, you need to specify the node package paths you want to load:
 
-```
-- your_project
-	- external_nodes (exactly this name! Can be layout like flow/nodes/ inside)
-		- __init__.py (must import your node modules)
-		- [your node modules]
-	- start_gui.py (can be any name, this is your GUI starter)
-```
-
-In your GUI starter, you need at least this code:
-
-```python
-from flow import gui
-gui.startApp()
-```
+	```python
+	from flow import gui
+	extNodes = ('external_nodes', 'C:/Path/To/other_node_lib') # example node package paths
+	gui.startApp(extNodes)
+	```

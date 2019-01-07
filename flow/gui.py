@@ -3,12 +3,13 @@
 from .graph import Graph, shortString # for building the flow graph
 from .node import Ptype # for identifying port data types
 from . import nodes # the node database
-import os # for making icon file path to load icons in package
+import os.path as putil # for path utility
 import json # for parsing JSON formatted graph files
 import logging # for debugging and warning user
 import threading # for making graph processing non-blocking
 import inspect # for walking the node modules
-import importlib # for importing nodes
+import importlib # for loading external node packages
+import sys # for relative importing
 try:
 	# for python 2
 	import Tkinter as tk # for building the gui
@@ -688,12 +689,17 @@ class NodeDatabase(object):
 		
 		# catch internal nodes
 		self.makeNodeMenu(nodes, nodes.__name__, self.menu, self.nodesDict)
-		try:
-			import external_nodes
-			# catch external nodes when available
-			self.makeNodeMenu(external_nodes, external_nodes.__name__, self.menu, self.nodesDict)
-		except ImportError:
-			pass
+		# catch external nodes when available
+		for extPkg in self.graphEditor.app.extNodePkgs:
+			try:
+				# add package path to scope for importing
+				sys.path.append(putil.dirname(extPkg))
+				# import package
+				extNodes = importlib.import_module(putil.basename(extPkg))
+				self.makeNodeMenu(extNodes, extNodes.__name__, self.menu, self.nodesDict)
+			except ImportError:
+				log.error('Could not load external node lib "{}"'.format(extPkg))
+		
 		# for faster access, skip the first menu when only 1 database was loaded
 		dbs = self.menu.winfo_children()
 		if len(dbs) == 1:
@@ -702,7 +708,7 @@ class NodeDatabase(object):
 		# add search item
 		self.menu.add_command(label='Search...', underline=0, command=self.openSearch)
 	
-	def makeNodeMenu(self, member, pgkName, parentMenu, nodeDict={}):
+	def makeNodeMenu(self, member, pkgName, parentMenu, nodeDict={}):
 		'''
 		Recursively calls to catch all nodes in the import hierarchy
 		'''
@@ -710,7 +716,7 @@ class NodeDatabase(object):
 		memName = member.__name__ if hasattr(member, '__name__') else ''
 		
 		# member is a class
-		if inspect.isclass(member) and pgkName in member.__module__:
+		if inspect.isclass(member) and pkgName in member.__module__:
 			# get node name because it looks nicer than the class name (it should!)
 			itemName = ''
 			for srcLine in inspect.getsourcelines(member)[0]:
@@ -730,7 +736,7 @@ class NodeDatabase(object):
 				command=lambda p=nodePath: self.graphEditor.spawnNode(p))
 		
 		# member is another module
-		if inspect.ismodule(member) and pgkName in memName:
+		if inspect.ismodule(member) and pkgName in memName:
 			# make menu item
 			memMenu = tk.Menu(parentMenu)
 			memMenu.path = memName
@@ -739,7 +745,7 @@ class NodeDatabase(object):
 			# call for each sub-member
 			subMems = inspect.getmembers(member)
 			for mem in subMems:
-				self.makeNodeMenu(mem[1], pgkName, memMenu, nodeDict)
+				self.makeNodeMenu(mem[1], pkgName, memMenu, nodeDict)
 	
 	def showSearchResults(self, term):
 		'''
@@ -807,9 +813,9 @@ class LogHandler(object):
 		
 		# get package loggers
 		self.loggers = []
-		self.pgkName = __name__.split('.')[0]
+		self.pkgName = __name__.split('.')[0]
 		for name in logging.Logger.manager.loggerDict.keys():
-			if self.pgkName in name:
+			if self.pkgName in name:
 				self.loggers.append(logging.getLogger(name))
 		
 		self.font = tkFont.Font(family='Courier New', size=12)
@@ -899,9 +905,13 @@ class FlowApp(object):
 	'''
 	Main window of the application
 	'''
-	def __init__(self):
+	def __init__(self, extNodePkgs=()):
+		'''
+		:param extNodePkgs: optional tuple with strings of external node packages to load
+		'''
 		self.root = tk.Tk()
 		self.root.protocol('WM_DELETE_WINDOW', self.onQuit) # window closing redirected to quit
+		self.extNodePkgs = extNodePkgs
 		self.step = 0 # for manual processing nodes step-by-step
 		self.graphStop = threading.Event() # for stopping the graph
 		self.graphThread = None
@@ -985,8 +995,8 @@ class FlowApp(object):
 		:param callback: function to fire when button is clicked
 		'''
 		# get icon path in the package
-		pkgPath = os.path.dirname(__file__)
-		iconPath = os.path.join(pkgPath, 'gui_icons')
+		pkgPath = putil.dirname(__file__)
+		iconPath = putil.join(pkgPath, 'gui_icons')
 		# make button
 		img = tk.PhotoImage(file='{}/{}'.format(iconPath, icon))
 		btn = tk.Label(self.toolbar, image=img, bg=COL_PRIM)
@@ -1128,11 +1138,11 @@ class FlowApp(object):
 		self.logHandler.enableLog(not self.logHandler.enabled)
 
 
-def startApp():
+def startApp(extNodePkgs=()):
 	'''
 	starts the GUI
 	'''
-	FlowApp()
+	FlowApp(extNodePkgs)
 
 
 if __name__ == '__main__':
