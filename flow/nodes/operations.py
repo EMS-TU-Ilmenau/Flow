@@ -2,63 +2,87 @@ from flow.node import Node, Ptype
 import math # for float operations
 
 class Operation(Node):
-	'''Base class for all operations with two inputs and one output'''
+	'''
+	Base class for basic operations with two inputs
+	'''
 	def __init__(self, name):
-		super(Operation, self).__init__(name)
+		Node.__init__(self, name)
 		# build inputs and outputs
 		self.addInput('a')
 		self.addInput('b')
 		self.res = self.addOutput('c')
 
+
 class Add(Operation):
 	def __init__(self):
-		super(Add, self).__init__('Addition')
+		Operation.__init__(self, 'Addition')
 	
 	def process(self, a, b):
 		self.res.push(a+b)
 
+
 class Sub(Operation):
 	def __init__(self):
-		super(Sub, self).__init__('Subtraction')
+		Operation.__init__(self, 'Subtraction')
 	
 	def process(self, a, b):
 		self.res.push(a-b)
 
+
 class Mul(Operation):
 	def __init__(self):
-		super(Mul, self).__init__('Multiplication')
+		Operation.__init__(self, 'Multiplication')
 	
 	def process(self, a, b):
 		self.res.push(a*b)
 
+
 class Div(Operation):
 	def __init__(self):
-		super(Div, self).__init__('Division')
+		Operation.__init__(self, 'Division')
 	
 	def process(self, a, b):
 		self.res.push(a/b)
 
+
 class Pow(Operation):
 	def __init__(self):
-		super(Pow, self).__init__('Power')
+		Operation.__init__(self, 'Power')
 	
 	def process(self, a, b):
 		self.res.push(a**b)
 
-class Exp(Node):
-	'''Exponent of a value'''
+
+class MinMax(Operation):
 	def __init__(self):
-		super(Exp, self).__init__('Exponent')
+		Operation.__init__(self, 'Min Max')
+		self.res.name = 'lower'
+		self.other = self.addOutput('higher')
+	
+	def process(self, a, b):
+		self.res.push(min(a, b))
+		self.other.push(max(a, b))
+
+
+class Exp(Node):
+	'''
+	Exponent of a value
+	'''
+	def __init__(self):
+		Node.__init__(self, 'Exponent')
 		self.addInput('x', 0.)
 		self.resOut = self.addOutput('exp', Ptype.FLOAT)
 	
 	def process(self, x):
 		self.resOut.push(math.exp(x))
 
+
 class Log(Node):
-	'''Logarithm of a value'''
+	'''
+	Logarithm of a value
+	'''
 	def __init__(self):
-		super(Log, self).__init__('Logarithm')
+		Node.__init__(self, 'Logarithm')
 		self.addInput('x', 1.)
 		self.addInput('base', 10.)
 		self.resOut = self.addOutput('log', Ptype.FLOAT)
@@ -66,17 +90,29 @@ class Log(Node):
 	def process(self, x, base):
 		self.resOut.push(math.log(x, base))
 
+
 class AngleFunc(Node):
-	'''Base class for angle functions with radians/degree conversion'''
+	'''
+	Base class for angle functions with radians/degree conversion
+	'''
 	def __init__(self, name):
-		super(AngleFunc, self).__init__(name)
+		Node.__init__(self, name)
 		self.addInput('deg', False)
 		self.addInput('hyperb', False)
+	
+	def hyperFunc(self, *args):
+		raise NotImplementedError('hyperFunc not implemented')
+	
+	def angleFunc(self, *args):
+		raise NotImplementedError('angleFunc not implemented')
+
 
 class AngleTo(AngleFunc):
-	'''Base class for angle functions with angle to function conversion'''
+	'''
+	Base class for angle functions with angle to function conversion
+	'''
 	def __init__(self, name):
-		super(AngleTo, self).__init__(name)
+		AngleFunc.__init__(self, name)
 		self.addInput('angle', 0.)
 		self.resOut = self.addOutput('value', Ptype.FLOAT)
 	
@@ -86,10 +122,13 @@ class AngleTo(AngleFunc):
 		# hyperFunc and angleFunc have to be defined by inheritated class!
 		self.resOut.push(self.hyperFunc(angle) if hyperb else self.angleFunc(angle))
 
+
 class ToAngle(AngleFunc):
-	'''Base class for angle functions with function to angle conversion'''
+	'''
+	Base class for angle functions with function to angle conversion
+	'''
 	def __init__(self, name):
-		super(ToAngle, self).__init__(name)
+		AngleFunc.__init__(self, name)
 		self.addInput('value', 0.)
 		self.resOut = self.addOutput('angle', Ptype.FLOAT)
 	
@@ -100,48 +139,44 @@ class ToAngle(AngleFunc):
 			angle = math.degrees(angle)
 		self.resOut.push(angle)
 
+
 class Sinus(AngleTo):
 	def __init__(self):
-		super(Sinus, self).__init__('Angle to sinus')
+		AngleTo.__init__(self, 'Angle to sinus')
 		self.angleFunc = math.sin
 		self.hyperFunc = math.sinh
 
+
 class Cosinus(AngleTo):
 	def __init__(self):
-		super(Cosinus, self).__init__('Angle to cosinus')
+		AngleTo.__init__(self, 'Angle to cosinus')
 		self.angleFunc = math.cos
 		self.hyperFunc = math.cosh
 
+
 class Tangens(AngleTo):
 	def __init__(self):
-		super(Tangens, self).__init__('Angle to tangens')
+		AngleTo.__init__(self, 'Angle to tangens')
 		self.angleFunc = math.tan
 		self.hyperFunc = math.tanh
 
+
 class ArcSinus(ToAngle):
 	def __init__(self):
-		super(ArcSinus, self).__init__('Sinus to angle')
+		ToAngle.__init__(self, 'Sinus to angle')
 		self.angleFunc = math.asin
 		self.hyperFunc = math.asinh
 
+
 class ArcCosinus(ToAngle):
 	def __init__(self):
-		super(ArcCosinus, self).__init__('Cosinus to angle')
+		ToAngle.__init__(self, 'Cosinus to angle')
 		self.angleFunc = math.acos
 		self.hyperFunc = math.acosh
 
+
 class ArcTangens(ToAngle):
 	def __init__(self):
-		super(ArcTangens, self).__init__('Tangens to angle')
+		ToAngle.__init__(self, 'Tangens to angle')
 		self.angleFunc = math.atan
 		self.hyperFunc = math.atanh
-
-class MinMax(Operation):
-	def __init__(self):
-		super(MinMax, self).__init__('Min Max')
-		self.res.name = 'lower'
-		self.other = self.addOutput('higher')
-	
-	def process(self, a, b):
-		self.res.push(min(a, b))
-		self.other.push(max(a, b))

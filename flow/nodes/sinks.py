@@ -1,19 +1,24 @@
 from flow.node import Node, Ptype
 
 class Print(Node):
-	'''Formats input data as string'''
+	'''
+	Formats input data as string
+	'''
 	def __init__(self):
-		super(Print, self).__init__('Print')
+		Node.__init__(self, 'Print')
 		self.addInput('data')
 		self.strOut = self.addOutput('formatted', Ptype.STR)
 	
 	def process(self, data):
 		self.strOut.push('{}'.format(data))
 
+
 class DictSink(Node):
-	'''Adds / replaces a key:value pair to a dictionary'''
+	'''
+	Adds / replaces a key:value pair to a dictionary
+	'''
 	def __init__(self):
-		super(DictSink, self).__init__('Dictionary')
+		Node.__init__(self, 'Dictionary')
 		self.dictIn = self.addInput('dictionary', {})
 		self.addInput('key', 'key')
 		self.addInput('value')
@@ -26,11 +31,14 @@ class DictSink(Node):
 		dictionary[key] = value
 		self.dictOut.push(dictionary)
 
+
 class FileSink(Node):
-	'''Writes input data as lines to a file 
-	specified by a path string input'''
+	'''
+	Writes input data as lines to a file 
+	specified by a path string input
+	'''
 	def __init__(self):
-		super(FileSink, self).__init__('File sink')
+		Node.__init__(self, 'File sink')
 		self.addInput('string', ptype=Ptype.STR)
 		self.addInput('filepath', '/Path/To/File.suffix', ptype=Ptype.FILE)
 		self.addInput('lines', False) # adding linefeed or not

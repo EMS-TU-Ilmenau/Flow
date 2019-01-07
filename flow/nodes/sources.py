@@ -1,51 +1,65 @@
 from flow.node import Node, Ptype
 
 class IntegerSource(Node):
-	'''Provides a integer number on its output'''
+	'''
+	Provides a integer number on its output
+	'''
 	def __init__(self):
-		super(IntegerSource, self).__init__('Int out')
-		# Automatically assign same datatype to output as the input 
+		Node.__init__(self, 'Int out')
+		# Automatically assign same datatype to output as the input
 		# by parsing the default value during addInput.
-		input = self.addInput('value', 0)
-		self.srcOut = self.addOutput('int', input.ptype)
+		inp = self.addInput('value', 0)
+		self.srcOut = self.addOutput('int', inp.ptype)
 	
 	def process(self, value):
 		self.srcOut.push(int(value))
 
+
 class FloatSource(Node):
-	'''Provides a float number on its output'''
+	'''
+	Provides a float number on its output
+	'''
 	def __init__(self):
-		super(FloatSource, self).__init__('Float out')
-		input = self.addInput('value', 0.0)
-		self.srcOut = self.addOutput('float', input.ptype)
+		Node.__init__(self, 'Float out')
+		inp = self.addInput('value', 0.0)
+		self.srcOut = self.addOutput('float', inp.ptype)
 	
 	def process(self, value):
 		self.srcOut.push(float(value))
 
+
 class BooleanSource(Node):
-	'''Provides a bool value on its output'''
+	'''
+	Provides a bool value on its output
+	'''
 	def __init__(self):
-		super(BooleanSource, self).__init__('Bool out')
-		input = self.addInput('value', True)
-		self.srcOut = self.addOutput('bool', input.ptype)
+		Node.__init__(self, 'Bool out')
+		inp = self.addInput('value', True)
+		self.srcOut = self.addOutput('bool', inp.ptype)
 	
 	def process(self, value):
 		self.srcOut.push(True if value else False)
 
+
 class StringSource(Node):
-	'''Provides a string on its output'''
+	'''
+	Provides a string on its output
+	'''
 	def __init__(self):
-		super(StringSource, self).__init__('String out')
-		input = self.addInput('value', 'Hello')
-		self.srcOut = self.addOutput('string', input.ptype)
+		Node.__init__(self, 'String out')
+		inp = self.addInput('value', 'Hello')
+		self.srcOut = self.addOutput('string', inp.ptype)
 	
 	def process(self, value):
 		self.srcOut.push(str(value))
 
+
 class ComplexSource(Node):
-	'''Provides a complex number on its output'''
+	'''
+	Provides a complex number on its output
+	'''
 	def __init__(self):
-		super(ComplexSource, self).__init__('Complex out')
+		Node.__init__(self, 'Complex out')
 		self.addInput('re', 0.0)
 		self.addInput('im', 0.0)
 		self.complexOut = self.addOutput('complex', Ptype.COMPLEX)
@@ -53,10 +67,13 @@ class ComplexSource(Node):
 	def process(self, re, im):
 		self.complexOut.push(complex(re, im))
 
+
 class DictSource(Node):
-	'''Gets a value specified by key from a dictionary'''
+	'''
+	Gets a value specified by key from a dictionary
+	'''
 	def __init__(self):
-		super(DictSource, self).__init__('Value from dictionary')
+		Node.__init__(self, 'Value from dictionary')
 		self.addInput('dictionary', {})
 		self.addInput('key', 'key')
 		self.valOut = self.addOutput('value')
@@ -65,10 +82,13 @@ class DictSource(Node):
 		if key in dictionary:
 			self.valOut.push(dictionary[key])
 
+
 class RangeSource(Node):
-	'''Abstract class for range sources'''
+	'''
+	Abstract class for range sources
+	'''
 	def __init__(self, name):
-		super(RangeSource, self).__init__(name)
+		Node.__init__(self, name)
 		self.arrOut = self.addOutput('array', Ptype.LIST)
 		self.lenOut = self.addOutput('length', Ptype.INT)
 	
@@ -90,27 +110,36 @@ class RangeSource(Node):
 		self.arrOut.push(arr)
 		self.lenOut.push(len(arr))
 
+
 class IntegerRangeSource(RangeSource):
-	'''Provides an int range array and its length on the outputs'''
+	'''
+	Provides an int range array and its length on the outputs
+	'''
 	def __init__(self):
-		super(IntegerRangeSource, self).__init__('Int range out')
+		RangeSource.__init__(self, 'Int range out')
 		self.addInput('start', 1)
 		self.addInput('step', 1)
 		self.addInput('stop', 10)
 
+
 class FloatRangeSource(RangeSource):
-	'''Provides a float range array and its length on the outputs'''
+	'''
+	Provides a float range array and its length on the outputs
+	'''
 	def __init__(self):
-		super(FloatRangeSource, self).__init__('Float range out')
+		RangeSource.__init__(self, 'Float range out')
 		self.addInput('start', 0.)
 		self.addInput('step', 0.1)
 		self.addInput('stop', 1.)
 
+
 class FileSource(Node):
-	'''Reads lines from a file specified by a path string 
-	and pushes out the line strings'''
+	'''
+	Reads lines from a file specified by a path string 
+	and pushes out the line strings
+	'''
 	def __init__(self):
-		super(FileSource, self).__init__('File source')
+		Node.__init__(self, 'File source')
 		self.addInput('filepath', '/Path/To/File.suffix', ptype=Ptype.FILE)
 		self.lineOut = self.addOutput('line', Ptype.STR)
 	

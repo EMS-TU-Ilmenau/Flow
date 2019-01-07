@@ -5,9 +5,11 @@ from datetime import datetime # for getting timestamps
 import json # for the dict/str converter nodes
 
 class StrSplit(Node):
-	'''Splits a string by delimiter and pushes out the separated string parts'''
+	'''
+	Splits a string by delimiter and pushes out the separated string parts
+	'''
 	def __init__(self):
-		super(StrSplit, self).__init__('String split')
+		Node.__init__(self, 'String split')
 		self.addInput('string', ptype=Ptype.STR)
 		self.addInput('delimiter', ',')
 		self.strOut = self.addOutput('parts', Ptype.STR)
@@ -16,10 +18,13 @@ class StrSplit(Node):
 		for part in string.split(delimiter):
 			self.strOut.push(part)
 
+
 class StrReplace(Node):
-	'''Replaces a pattern in a string'''
+	'''
+	Replaces a pattern in a string
+	'''
 	def __init__(self):
-		super(StrReplace, self).__init__('String replace')
+		Node.__init__(self, 'String replace')
 		self.addInput('string', ptype=Ptype.STR)
 		self.addInput('find', ';')
 		self.addInput('replace', ',')
@@ -28,10 +33,13 @@ class StrReplace(Node):
 	def process(self, string, find, replace):
 		self.strOut.push(string.replace(find, replace))
 
+
 class StrToDict(Node):
-	'''Converts a JSON formatted string to to a dictionary'''
+	'''
+	Converts a JSON formatted string to to a dictionary
+	'''
 	def __init__(self):
-		super(StrToDict, self).__init__('String to dictionary')
+		Node.__init__(self, 'String to dictionary')
 		self.addInput('string', ptype=Ptype.STR)
 		self.dictOut = self.addOutput('dictionary', Ptype.DICT)
 	
@@ -39,12 +47,15 @@ class StrToDict(Node):
 		try:
 			self.dictOut.push(json.loads(string))
 		except:
-			raise Error('{} cannot convert {:.50}... to a dictionary'.format(self.name, string))
+			raise TypeError('{} cannot convert {:.50}... to a dictionary'.format(self.name, string))
+
 
 class DictToStr(Node):
-	'''Converts dictionary to a JSON formatted string'''
+	'''
+	Converts dictionary to a JSON formatted string
+	'''
 	def __init__(self):
-		super(DictToStr, self).__init__('Dictionary to string')
+		Node.__init__(self, 'Dictionary to string')
 		self.addInput('dictionary', ptype=Ptype.DICT)
 		self.addInput('oneLine', False)
 		self.strOut = self.addOutput('string', Ptype.STR)
@@ -54,15 +65,17 @@ class DictToStr(Node):
 			pretty = None if oneLine else 4 # indent lines or not
 			self.strOut.push(json.dumps(dictionary, indent=pretty))
 		except:
-			raise Error('{} cannot convert {:.50}... to a string'.format(self.name, dictionary))
+			raise TypeError('{} cannot convert {:.50}... to a string'.format(self.name, dictionary))
+
 
 class PackArray(Node):
-	'''Fetches data and releases them as an array.
+	'''
+	Fetches data and releases them as an array.
 	The array will be pushed out when reached length, or, 
 	if length < 1, when no elements are incoming anymore.
 	'''
 	def __init__(self):
-		super(PackArray, self).__init__('Pack array')
+		Node.__init__(self, 'Pack array')
 		# build inputs and outputs
 		self.dataIn = self.addInput('elements')
 		self.addInput('length', 0)
@@ -84,11 +97,14 @@ class PackArray(Node):
 			if not self.dataIn.buffer:
 				self.arrOut.push(self.dataCollector)
 
+
 class UnpackArray(Node):
-	'''Reads all elements from an array and pushes them out. 
-	It basically just unpacks the array'''
+	'''
+	Reads all elements from an array and pushes them out. 
+	It basically just unpacks the array
+	'''
 	def __init__(self):
-		super(UnpackArray, self).__init__('Unpack array')
+		Node.__init__(self, 'Unpack array')
 		self.addInput('array', ptype=Ptype.LIST)
 		self.elOut = self.addOutput('elements')
 	
@@ -96,10 +112,13 @@ class UnpackArray(Node):
 		for element in array:
 			self.elOut.push(element)
 
+
 class IndexToValue(Node):
-	'''Get a value based on index from an array'''
+	'''
+	Get a value based on index from an array
+	'''
 	def __init__(self):
-		super(IndexToValue, self).__init__('Array value')
+		Node.__init__(self, 'Array value')
 		self.addInput('array', ptype=Ptype.LIST)
 		self.addInput('index', -1)
 		self.valOut = self.addOutput('value')
@@ -110,10 +129,13 @@ class IndexToValue(Node):
 		except IndexError:
 			pass
 
+
 class ValueToIndex(Node):
-	'''Get an index based on value from an array'''
+	'''
+	Get an index based on value from an array
+	'''
 	def __init__(self):
-		super(ValueToIndex, self).__init__('Array index')
+		Node.__init__(self, 'Array index')
 		self.addInput('array', ptype=Ptype.LIST)
 		self.addInput('value')
 		self.indOut = self.addOutput('index', Ptype.INT)
@@ -122,10 +144,13 @@ class ValueToIndex(Node):
 		if value in array:
 			self.indOut.push(array.index(value))
 
+
 class ArrayMax(Node):
-	'''Get the maximum value and corresponding index from an array'''
+	'''
+	Get the maximum value and corresponding index from an array
+	'''
 	def __init__(self):
-		super(ArrayMax, self).__init__('Maximum in array')
+		Node.__init__(self, 'Maximum in array')
 		self.addInput('array', ptype=Ptype.LIST)
 		self.valOut = self.addOutput('value')
 		self.indOut = self.addOutput('index', Ptype.INT)
@@ -135,10 +160,13 @@ class ArrayMax(Node):
 		self.valOut.push(val)
 		self.indOut.push(array.index(val))
 
+
 class ArrayMin(Node):
-	'''Get the minimum value and corresponding index from an array'''
+	'''
+	Get the minimum value and corresponding index from an array
+	'''
 	def __init__(self):
-		super(ArrayMin, self).__init__('Minimum in array')
+		Node.__init__(self, 'Minimum in array')
 		self.addInput('array', ptype=Ptype.LIST)
 		self.valOut = self.addOutput('value')
 		self.indOut = self.addOutput('index', Ptype.INT)
@@ -148,18 +176,24 @@ class ArrayMin(Node):
 		self.valOut.push(val)
 		self.indOut.push(array.index(val))
 
+
 class ArrayLength(Node):
-	'''Get the length an array'''
+	'''
+	Get the length an array
+	'''
 	def __init__(self):
-		super(ArrayLength, self).__init__('Array length')
+		Node.__init__(self, 'Array length')
 		self.addInput('array', ptype=Ptype.LIST)
 		self.lenOut = self.addOutput('length', Ptype.INT)
 	
 	def process(self, array):
 		self.lenOut.push(len(array))
 
+
 class ArrayAppend(Node):
-	'''Adds an element to an array'''
+	'''
+	Adds an element to an array
+	'''
 	def __init__(self):
 		Node.__init__(self, 'Append to Array')
 		self.arrIn = self.addInput('array', [])
@@ -173,8 +207,11 @@ class ArrayAppend(Node):
 		array.append(data)
 		self.arrOut.push(array)
 
+
 class ArrayRemove(Node):
-	'''Removes an element of an array'''
+	'''
+	Removes an element of an array
+	'''
 	def __init__(self):
 		Node.__init__(self, 'Remove from Array')
 		self.addInput('array', ptype=Ptype.LIST)
@@ -185,10 +222,13 @@ class ArrayRemove(Node):
 		array.remove(data)
 		self.arrOut.push(array)
 
+
 class Replicate(Node):
-	'''Replicate incoming data n times'''
+	'''
+	Replicate incoming data n times
+	'''
 	def __init__(self):
-		super(Replicate, self).__init__('Replicate')
+		Node.__init__(self, 'Replicate')
 		# build inputs and outputs
 		self.addInput('data')
 		self.addInput('n', 1) # 1 means, the data goes out 1:1
@@ -198,10 +238,13 @@ class Replicate(Node):
 		for _ in range(n):
 			self.repOut.push(data)
 
+
 class Trigger(Node):
-	'''Gates data behind any data at trigger port'''
+	'''
+	Gates data behind any data at trigger port
+	'''
 	def __init__(self):
-		super(Trigger, self).__init__('Trigger')
+		Node.__init__(self, 'Trigger')
 		self.dataIn = self.addInput('data')
 		self.addInput('trigger')
 		self.addInput('reuseOldData', False)
@@ -213,10 +256,13 @@ class Trigger(Node):
 			# append old data to buffer again until fresh data is coming
 			self.dataIn.buffer.append(data)
 
+
 class Pause(Node):
-	'''Sleeps blocking for specified seconds'''
+	'''
+	Sleeps blocking for specified seconds
+	'''
 	def __init__(self):
-		super(Pause, self).__init__('Pause')
+		Node.__init__('Pause')
 		self.addInput('data')
 		self.addInput('durationSec', 1.)
 		self.addInput('clock', False)
@@ -240,8 +286,11 @@ class Pause(Node):
 			time.sleep(durationSec)
 		self.dataOut.push(data)
 
+
 class Timestamp(Node):
-	'''Pushes a UTC timestamp out for every data incoming'''
+	'''
+	Pushes a UTC timestamp out for every data incoming
+	'''
 	def __init__(self):
 		Node.__init__(self, 'Timestamp')
 		self.addInput('data')
