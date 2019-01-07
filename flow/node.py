@@ -4,7 +4,8 @@ import copy # for deep copying data when output pushes to multiple inputs
 log = logging.getLogger(__name__)
 
 class Ptype(object):
-	'''Input and output port type identifiers
+	'''
+	Input and output port type identifiers
 	'''
 	OBJECT = 0 # generic/default
 	BOOL = 1
@@ -19,8 +20,10 @@ class Ptype(object):
 	
 	@classmethod
 	def fromObj(cls, obj):
-		'''Checks if obj can be recognized as one of the port types 
-		and returns porttype identifier.'''
+		'''
+		Checks if obj can be recognized as one of the port types 
+		and returns porttype identifier.
+		'''
 		# common types. Make sure they exist in both Python versions!
 		commonTypes = {
 			bool: cls.BOOL, 
@@ -35,16 +38,20 @@ class Ptype(object):
 		# return best match for the objects type
 		return commonTypes.get(type(obj), cls.OBJECT)
 
+
 class Node(object):
-	'''Base node class.
+	'''
+	Base node class.
 	May be configured to have arbitrary number of inputs and outputs.
 	'''
 	
 	def __init__(self, name='Node'):
-		''':param name: name of the node'''
-		# make lists for inputs and outputs
-		self.inputs = []
-		self.outputs = []
+		'''
+		:param name: name of the node
+		'''
+		# make dicts for inputs and outputs
+		self.input = {}
+		self.output = {}
 		self.name = name
 		self.busy = False
 	
@@ -52,60 +59,70 @@ class Node(object):
 		self.disconnect() # disconnect from other nodes before deleting
 	
 	def addInput(self, name, *args, **kwargs):
-		'''Creates a new input port. See InputPort for parameters.'''
-		input = InputPort(self, name, *args, **kwargs)
-		self.inputs.append(input)
-		return input
+		'''
+		Creates a new input port. See InputPort for parameters.
+		'''
+		inp = InputPort(self, name, *args, **kwargs)
+		self.input[name] = inp
+		return inp
 	
 	def addOutput(self, name, *args, **kwargs):
-		'''Creates a new output port. See OutputPort for parameters.'''
-		output = OutputPort(self, name, *args, **kwargs)
-		self.outputs.append(output)
-		return output
+		'''
+		Creates a new output port. See OutputPort for parameters.
+		'''
+		out = OutputPort(self, name, *args, **kwargs)
+		self.output[name] = out
+		return out
 	
-	def getInput(self, name): # probably never needed
-		''':returns: input port by its name'''
-		return next((p for p in self.inputs if p.name == name), None)
+	@property
+	def inputs(self):
+		return self.input.values()
 	
-	def getOutput(self, name): # only needed when building graph
-		''':returns: output port by its name'''
-		return next((p for p in self.outputs if p.name == name), None)
+	@property
+	def outputs(self):
+		return self.output.values()
 	
 	def disconnect(self):
-		'''Detaches all connections from or to this node'''
+		'''
+		Detaches all connections from or to this node
+		'''
 		# iterate over own outputs
-		for output in self.outputs:
-			output.disconnect()
+		for out in self.outputs:
+			out.disconnect()
 		
 		# iterate over own inputs
-		for input in self.inputs:
-			input.disconnect()
+		for inp in self.inputs:
+			inp.disconnect()
 	
 	def reset(self):
-		'''Is called during graph preparation'''
+		'''
+		Is called during graph preparation
+		'''
 		# reset inputs
-		for input in self.inputs:
-			input.buffer = []
-			input.looped = False
-			input.defaultUsed = False
+		for inp in self.inputs:
+			inp.buffer = []
+			inp.looped = False
+			inp.defaultUsed = False
+		
 		# reset outputs
-		for output in self.outputs:
-			output.result = None
+		for out in self.outputs:
+			out.result = None
 		
 		self.prepare() # in case there something to prepare
 	
 	def collect(self):
-		'''Is called every graph iteration.
+		'''
+		Is called every graph iteration.
 		Synchronizes data and calls "process" when all inputs are ready.
 		'''
 		log.debug('{} is collecting data'.format(self.name))
-		if all(input.couldPull() for input in self.inputs):
+		if all(inp.couldPull() for inp in self.inputs):
 			self.busy = True
 			log.debug('{} can process\n'.format(self.name))
 			# get data from the inputs when all could pull
 			data = {}
-			for input in self.inputs:
-				data[input.name] = input.pull()
+			for inp in self.inputs:
+				data[inp.name] = inp.pull()
 			# process data
 			self.process(**data)
 		else:
@@ -113,30 +130,39 @@ class Node(object):
 			log.debug('{} can NOT process\n'.format(self.name))
 	
 	def process(self, **inputData):
-		'''Implementation of the nodes purpose here.
+		'''
+		Implementation of the nodes purpose here.
 		:param inputData: input names as arguments for their data
 		'''
 		pass
 	
 	def prepare(self):
-		'''Is called before the graph starts processing. 
-		Should not be needed in most cases.'''
+		'''
+		Is called before the graph starts processing. 
+		Should not be needed in most cases.
+		'''
 		pass
 	
 	def finish(self):
-		'''Is called after the graph has finished processing. 
-		Should not be needed in most cases.'''
+		'''
+		Is called after the graph has finished processing. 
+		Should not be needed in most cases.
+		'''
 		pass
 
+
 class InputPort(object):
-	'''Node input.
+	'''
+	Node input.
 	Here, data is obtained either from the inputs of connected nodes, 
 	or from default values.
 	'''
 	
 	def __init__(self, node, name='Input', default=None, ptype=Ptype.OBJECT):
-		''':param node: the node this port belongs to
-		:param name: string name for this input. NO SPACES ALLOWED!!!
+		'''
+		:param node: the node this port belongs to
+		:param name: string name for this input. 
+			Only Python variable name style allowed!!!
 		:param default: value used in case no data can be pulled
 		:param ptype: data type identifier (see Ptype)
 		'''
@@ -154,21 +180,29 @@ class InputPort(object):
 			self.ptype = ptype
 	
 	def connect(self, output):
-		''':param output: output port of a node to connect to'''
+		'''
+		:param output: output port of a node to connect to
+		'''
 		if output:
 			output.connect(self)
 	
 	def disconnect(self):
-		'''Disconnects from the currently connected output'''
+		'''
+		Disconnects from the currently connected output
+		'''
 		if self.isConnected():
 			self.connOutput.disconnect(self)
 	
 	def isConnected(self):
-		''':returns: boolean indicating connection to an output'''
+		'''
+		:returns: boolean indicating connection to an output
+		'''
 		return True if self.connOutput else False
 	
 	def couldPull(self):
-		''':returns: True when data available, False when not'''
+		'''
+		:returns: True when data available, False when not
+		'''
 		log.debug('Check if {} could pull:'.format(self.name))
 		if self.buffer:
 			log.debug('\tYes, from buffer')
@@ -183,7 +217,7 @@ class InputPort(object):
 			if not self.defaultUsed:
 				log.debug('\tYes, using default')
 				return True
-			if any(input.buffer for input in self.node.inputs if input is not self):
+			if any(inp.buffer for inp in self.node.inputs if inp is not self):
 				log.debug('\tYes, using default because other inputs have data')
 				return True
 			log.debug('\tNo, because default already used and other inputs have no data')
@@ -192,7 +226,9 @@ class InputPort(object):
 			return False
 	
 	def pull(self):
-		''':returns: data from the buffer/queue or default value'''
+		'''
+		:returns: data from the buffer/queue or default value
+		'''
 		if self.buffer:
 			return self.buffer.pop(0) # take from buffer in normal cases
 		else:
@@ -203,12 +239,14 @@ class InputPort(object):
 
 
 class OutputPort(object):
-	'''Node output.
+	'''
+	Node output.
 	Holds connected node inputs and can connect and disconnect
 	'''
 	
 	def __init__(self, node, name='Output', ptype=Ptype.OBJECT):
-		''':param node: the node this port belongs to
+		'''
+		:param node: the node this port belongs to
 		:param name: string name for this output. NO SPACES ALLOWED!!!
 		:param ptype: data type identifier
 		'''
@@ -218,48 +256,55 @@ class OutputPort(object):
 		self.node = node
 		self.ptype = ptype
 	
-	def connect(self, input):
-		''':param input: input port of a node to connect to'''
+	def connect(self, inp):
+		'''
+		:param inp: input port of a node to connect to
+		'''
 		# check for datatype (probably just causes trouble (e.g. tuple vs. list))
-		if not (input.ptype is self.ptype or input.ptype is Ptype.OBJECT or self.ptype is Ptype.OBJECT):
+		if not (inp.ptype is self.ptype or inp.ptype is Ptype.OBJECT or self.ptype is Ptype.OBJECT):
 			logging.warning('Type of {}.{} might be incompatible with {}.{}'.format(
-				self.node.name, self.name, input.node.name, input.name))
+				self.node.name, self.name, inp.node.name, inp.name))
 		# detach old connection of target input
-		input.disconnect()
+		inp.disconnect()
 		# connect to input
-		input.connOutput = self
-		self.connInputs.append(input)
+		inp.connOutput = self
+		self.connInputs.append(inp)
 	
-	def disconnect(self, input=None):
-		'''Disconnects from specific or all Inputs.
-		
-		:param input: input port of a node to disconnect from or
-			None to disconnect from all connected inputs.'''
-		if input in self.connInputs:
+	def disconnect(self, inp=None):
+		'''
+		Disconnects from specific or all Inputs.
+		:param inp: input port of a node to disconnect from or
+			None to disconnect from all connected inputs.
+		'''
+		if inp in self.connInputs:
 			# disconnect from input
-			input.connOutput = None
-			self.connInputs.remove(input)
-		elif input is None:
+			inp.connOutput = None
+			self.connInputs.remove(inp)
+		elif inp is None:
 			# disconnect all inputs
 			while self.connInputs:
 				self.disconnect(self.connInputs[0])
 	
 	def isConnected(self):
-		''':returns: boolean indicating connection to at least 1 input'''
+		'''
+		:returns: boolean indicating connection to at least 1 input
+		'''
 		return True if self.connInputs else False
 	
 	def push(self, data):
-		'''Pushes data into the buffer of all connected inputs 
-		or save as result if unconnected.'''
+		'''
+		Pushes data into the buffer of all connected inputs 
+		or save as result if unconnected.
+		'''
 		if self.isConnected():
 			share = 0
-			for input in self.connInputs:
+			for inp in self.connInputs:
 				share += 1
 				log.info('{}.{} pushing data out to {}.{}'.format(
-					self.node.name, self.name, input.node.name, input.name))
+					self.node.name, self.name, inp.node.name, inp.name))
 				if share > 1:
-					input.buffer.append(copy.deepcopy(data))
+					inp.buffer.append(copy.deepcopy(data))
 				else:
-					input.buffer.append(data)
+					inp.buffer.append(data)
 		else:
 			self.result = data

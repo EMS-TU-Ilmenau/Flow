@@ -45,13 +45,17 @@ COL_DTYPE = {
 	Ptype.FILE: '#198B4A'}
 
 def setupHoverColor(widget, hoverCol=COL_MAIN):
-	'''Add bindings to a widget to change its background color upon hover'''
+	'''
+	Add bindings to a widget to change its background color upon hover
+	'''
 	widget.normalCol = widget.cget('bg')
 	widget.bind('<Enter>', lambda _: widget.config(bg=hoverCol))
 	widget.bind('<Leave>', lambda _: widget.config(bg=widget.normalCol))
 
+
 class Point(object):
-	'''For easier position handling
+	'''
+	For easier position handling
 	'''
 	def __init__(self, x, y):
 		self.x = x
@@ -77,7 +81,8 @@ class Point(object):
 
 
 class NodeVisual(object):
-	'''Visual representation of a node.
+	'''
+	Visual representation of a node.
 	'''
 	def __init__(self, graphEditor, node, pos=Point(0, 0)):
 		self.graphEditor = graphEditor
@@ -94,13 +99,13 @@ class NodeVisual(object):
 		
 		# header
 		head = tk.Frame(self.body, bg=COL_MAIN, cursor='fleur')
-		head.bind('<Button-1>', self.dragStart)
-		head.bind('<B1-Motion>', self.dragMotion)
+		head.bind('<Button-1>', self.onDragStart)
+		head.bind('<B1-Motion>', self.onDragMotion)
 		# add title
 		title = tk.Label(head, text=self.node.name, font=self.font, bg=COL_MAIN, fg=COL_HL)
 		title.pack(side=tk.LEFT) # use expand=True to center title
-		title.bind('<Button-1>', self.dragStart)
-		title.bind('<B1-Motion>', self.dragMotion)
+		title.bind('<Button-1>', self.onDragStart)
+		title.bind('<B1-Motion>', self.onDragMotion)
 		# add delete button
 		delBtn = tk.Label(head, text=u' × ', font=self.font, 
 			bg=COL_MAIN, fg=COL_HL, cursor='X_cursor')
@@ -110,45 +115,48 @@ class NodeVisual(object):
 		head.pack(fill=tk.X)
 		
 		# add inputs
-		for input in self.node.inputs:
-			InputVisual(input)
+		for inp in self.node.inputs:
+			InputVisual(inp)
 		
 		# add outputs
-		for output in self.node.outputs:
-			OutputVisual(output)
+		for out in self.node.outputs:
+			OutputVisual(out)
 		
 		self.setPos(self.pos)
 	
-	def dragStart(self, e):
-		'''pick up node for dragging'''
+	def onDragStart(self, *args):
 		editorMousePos = self.graphEditor.mousePos()
 		editorNodePos = Point(self.body.winfo_x(), self.body.winfo_y())
 		self.dragOffset = editorNodePos-editorMousePos
 	
-	def dragMotion(self, e):
-		'''node is being dragged'''
+	def onDragMotion(self, *args):
 		editorMousePos = self.graphEditor.mousePos()
 		self.setPos(editorMousePos+self.dragOffset)
 	
 	def setPos(self, pos):
-		'''moves the node to a position in pixel.
-		:param pos: new position as Point'''
+		'''
+		Moves the node to a position in pixel
+		:param pos: new position as Point
+		'''
 		self.pos = pos
 		self.body.place(x=pos.x, y=pos.y)
 	
 	def setScale(self, scale):
-		'''sets the node to a given size.
-		:param scale: relative scale (normal is 1.0)'''
+		'''
+		Sets the node to a given size
+		:param scale: relative scale (normal is 1.0)
+		'''
 		self.font.configure(size=int(self.fontSize*scale))
 
 
 class InputVisual(object):
-	'''visual representation of an input
 	'''
-	def __init__(self, input):
-		self.input = input
+	Visual representation of an input
+	'''
+	def __init__(self, inp):
+		self.input = inp
 		self.nodeVisual = self.input.node.visual
-		input.visual = self
+		inp.visual = self
 		
 		# setup layout
 		font = self.nodeVisual.font
@@ -161,7 +169,7 @@ class InputVisual(object):
 			fg=COL_DTYPE.get(self.input.ptype, COL_DTYPE[Ptype.OBJECT]), 
 			cursor='crosshair')
 		self.port.pack(side=tk.LEFT)
-		self.port.input = self # retrieve with: getattr(widget, 'input', None)
+		self.port.inp = self # retrieve with: getattr(widget, 'input', None)
 		self.port.bind('<Button-1>', self.onConnDrag)
 		self.port.bind('<ButtonRelease-1>', self.nodeVisual.graphEditor.onConnDrop)
 		
@@ -216,7 +224,9 @@ class InputVisual(object):
 		self.lastAdj = e.x
 	
 	def adjustNum(self, e):
-		'''Adjust a numeric default value by dragging'''
+		'''
+		Adjust a numeric default value by dragging
+		'''
 		diff = e.x-self.lastAdj
 		# fine-tune sensitivity
 		d = abs(diff)
@@ -224,40 +234,49 @@ class InputVisual(object):
 		d = d if diff > 0 else -d
 		self.value.set(self.lastNum+int(d))
 	
-	def openFile(self, e):
-		'''Sets the value to the filepath from the open-dialog'''
+	def openFile(self, *args):
+		'''
+		Sets the value to the filepath from the open-dialog
+		'''
 		self.value.set(tkFileDialog.askopenfilename())
 	
-	def saveFile(self, e):
-		'''Sets the value to the filepath from the save-dialog'''
+	def saveFile(self, *args):
+		'''
+		Sets the value to the filepath from the save-dialog
+		'''
 		self.value.set(tkFileDialog.asksaveasfilename())
 	
 	def setDefault(self, *args):
-		'''Updates the input default value when user interacts'''
+		'''
+		Updates the input default value when user interacts
+		'''
 		try:
 			self.input.default = self.value.get()
 		except:
 			pass
 	
 	def defaultVisible(self, visible):
-		''':param visible: True or False to show/hide default'''
+		'''
+		:param visible: True or False to show/hide default
+		'''
 		if self.default:
 			if visible:
 				self.default.pack()
 			else:
 				self.default.pack_forget()
 	
-	def onConnDrag(self, e):
+	def onConnDrag(self, *args):
 		self.nodeVisual.graphEditor.dragInput = self
 
 
 class OutputVisual(object):
-	'''visual representation of an output
 	'''
-	def __init__(self, output):
-		self.output = output
+	Visual representation of an output
+	'''
+	def __init__(self, out):
+		self.output = out
 		self.nodeVisual = self.output.node.visual
-		output.visual = self
+		out.visual = self
 		
 		# setup layout
 		font = self.nodeVisual.font
@@ -269,7 +288,7 @@ class OutputVisual(object):
 			fg=COL_DTYPE.get(self.output.ptype, COL_DTYPE[Ptype.OBJECT]), 
 			cursor='crosshair')
 		self.port.pack(side=tk.RIGHT)
-		self.port.output = self
+		self.port.out = self
 		self.port.bind('<Button-1>', self.onConnDrag)
 		self.port.bind('<ButtonRelease-1>', self.nodeVisual.graphEditor.onConnDrop)
 		
@@ -286,13 +305,17 @@ class OutputVisual(object):
 		self.setResult()
 	
 	def setResult(self):
-		'''updates the view to display the ports result'''
+		'''
+		Updates the view to display the ports result
+		'''
 		resultString = shortString(self.output.result)
 		self.value.set(resultString)
 		self.resultVisible(True if resultString else False)
 	
 	def resultVisible(self, visible):
-		''':param visible: True or False to show/hide result'''
+		'''
+		:param visible: True or False to show/hide result
+		'''
 		if self.result:
 			if visible:
 				self.result.pack()
@@ -304,7 +327,8 @@ class OutputVisual(object):
 
 
 class GraphEditor(object):
-	'''visual representation of the graph
+	'''
+	Visual representation of the graph
 	'''
 	def __init__(self, app):
 		self.app = app
@@ -341,19 +365,25 @@ class GraphEditor(object):
 		self.bg.bind('<B1-Motion>', self.onPanning)
 	
 	def mousePos(self):
-		''':returns: mouse position relative to the background'''
+		'''
+		:returns: mouse position relative to the background
+		'''
 		return Point(
 			self.bg.winfo_pointerx()-self.bg.winfo_rootx(), 
 			self.bg.winfo_pointery()-self.bg.winfo_rooty())
 	
 	def widgetCenterPos(self, widget):
-		''':returns: widgets center position relative to the background'''
+		'''
+		:returns: widgets center position relative to the background
+		'''
 		return Point(
 			widget.winfo_rootx()-self.bg.winfo_rootx()+widget.winfo_width()/2, 
 			widget.winfo_rooty()-self.bg.winfo_rooty()+widget.winfo_height()/2)
 		
 	def onScroll(self, e):
-		'''Hackfix for multiplatform'''
+		'''
+		Hackfix for multiplatform
+		'''
 		amount = 0.1
 		if e.num == 5 or e.delta < 0:
 			self.onZoom(-amount)
@@ -361,7 +391,9 @@ class GraphEditor(object):
 			self.onZoom(amount)
 	
 	def onZoom(self, deltaZoom):
-		'''Zoomes in or out the graph using the scroll wheel.'''
+		'''
+		Zoomes in or out the graph using the scroll wheel
+		'''
 		self.lastZoom = self.curZoom
 		self.curZoom += deltaZoom
 		self.curZoom = min(max(self.curZoom, self.minZoom), self.maxZoom)
@@ -383,12 +415,16 @@ class GraphEditor(object):
 		self.bg.after(100, self.drawConns)
 	
 	def onLeftClick(self, e):
-		'''User clicked left on the background'''
+		'''
+		User clicked left on the background
+		'''
 		self.panStart = Point(e.x, e.y)
 		self.bg.focus_set() # to redirect key inputs here (space for searching)
 	
 	def onPanning(self, e):
-		'''User is holding and dragging on the background'''
+		'''
+		User is holding and dragging on the background
+		'''
 		# get relative position since last left click
 		panPos = Point(e.x, e.y)
 		deltaPos = panPos-self.panStart
@@ -399,15 +435,19 @@ class GraphEditor(object):
 		self.panStart = panPos
 	
 	def onRightDown(self, e):
-		'''Shows a popup menu for spawing the nodes.'''
+		'''
+		Shows a popup menu for spawing the nodes
+		'''
 		# shows the popup menu for spawing the nodes
 		self.spawnPos = self.mousePos()
 		self.nodeDB.menu.post(e.x_root, e.y_root)
 	
 	def spawnNode(self, classPath, spawnPos=None, name=''):
-		'''Instantiates a node in the graph.
+		'''
+		Instantiates a node in the graph
 		:param classPath: class import path. E.g. "flow.nodes.sinks.Print"
-		:param spawnPos: Point position where the node is placed'''
+		:param spawnPos: Point position where the node is placed
+		'''
 		# instantiate node
 		node = self.graph.nodeFromDatabase(classPath, name)
 		# GUI related node modifications
@@ -419,12 +459,14 @@ class GraphEditor(object):
 		nodeVisual.setScale(self.curZoom)
 	
 	def deleteNode(self, nodeName):
-		'''removes a node and its visual from the graph.
-		:param nodeName: the nodes unique graph-name'''
+		'''
+		Removes a node and its visual from the graph
+		:param nodeName: the nodes unique graph-name
+		'''
 		node = self.graph.nodeDict[nodeName]
 		# show connected input defaults
-		for output in node.outputs:
-			for connInput in output.connInputs:
+		for out in node.outputs:
+			for connInput in out.connInputs:
 				connInput.visual.defaultVisible(True)
 		# remove from visual panel
 		node.visual.body.pack_forget()
@@ -435,13 +477,17 @@ class GraphEditor(object):
 		self.drawConns()
 	
 	def updateResults(self):
-		'''Updates all output visuals to show current results.'''
+		'''
+		Updates all output visuals to show current results
+		'''
 		for node in self.graph.nodes:
-			for output in node.outputs:
-				output.visual.setResult()
+			for out in node.outputs:
+				out.visual.setResult()
 	
 	def fromDict(self, graphDict):
-		'''Creates a graph from a graph dictionary.'''
+		'''
+		Creates a graph from a graph dictionary
+		'''
 		if not 'nodes' in graphDict:
 			log.error('No nodes in graph')
 			return
@@ -464,17 +510,17 @@ class GraphEditor(object):
 				node = self.graph.nodeDict[nodeName] # get the already created node
 			except:
 				continue # related to error above
-			for input in node.inputs:
+			for inp in node.inputs:
 				try:
-					inputEntry = nodeEntry['inputs'][input.name]
+					inputEntry = nodeEntry['inputs'][inp.name]
 				except:
 					log.error('No setup for input "{}" of node "{}" in graph file'.format(
-						input.name, nodeName))
+						inp.name, nodeName))
 					continue
 				# set default
-				input.default = inputEntry.get('default')
-				if input.visual.value:
-					input.visual.value.set(input.default)
+				inp.default = inputEntry.get('default')
+				if inp.visual.value:
+					inp.visual.value.set(inp.default)
 				# set connection
 				conn = inputEntry.get('connection')
 				if conn:
@@ -482,21 +528,23 @@ class GraphEditor(object):
 						connNode = self.graph.nodeDict[conn['node']]
 					except:
 						continue # related to error above
-					connOutput = connNode.getOutput(conn['output'])
+					connOutput = connNode.output[conn['output']]
 					if connOutput:
-						input.connect(connOutput)
-						input.visual.defaultVisible(False)
+						inp.connect(connOutput)
+						inp.visual.defaultVisible(False)
 					else:
 						log.error('Node "{}" has no output "{}" which should be connected '
 							'to input "{}" of node "{}"'.format(
-							conn['node'], conn['output'], input.name, nodeName))
+							conn['node'], conn['output'], inp.name, nodeName))
 		
 		# update visual connections slow but accurate
 		self.bg.update()
 		self.bg.after_idle(self.drawConns)
 	
 	def toDict(self):
-		''':returns: dictionary describing the graph'''
+		'''
+		:returns: dictionary describing the graph
+		'''
 		graphDict = {}
 		graphDict['zoom'] = self.curZoom
 		nodeEntries = {}
@@ -510,18 +558,20 @@ class GraphEditor(object):
 			# create input entry dict for each input
 			inputEntries = {}
 			nodeEntry['inputs'] = inputEntries
-			for input in node.inputs:
+			for inp in node.inputs:
 				inputEntry = {}
-				inputEntries[input.name] = inputEntry
-				inputEntry['default'] = input.default
-				inputEntry['connection'] = None if not input.isConnected() else {
-					'node': input.connOutput.node.name, 
-					'output': input.connOutput.name}
+				inputEntries[inp.name] = inputEntry
+				inputEntry['default'] = inp.default
+				inputEntry['connection'] = None if not inp.isConnected() else {
+					'node': inp.connOutput.node.name, 
+					'output': inp.connOutput.name}
 		
 		return graphDict
 	
 	def onConnDragging(self, e):
-		'''Fires when mouse is pressed and moved globally'''
+		'''
+		Fires when mouse is pressed and moved globally
+		'''
 		try:
 			widget = self.bg.winfo_containing(e.x_root, e.y_root)
 			# get latest possible drop target
@@ -533,9 +583,11 @@ class GraphEditor(object):
 			pass # because errors on Linux when clicking on the toolbar
 	
 	def onConnDrop(self, e):
-		'''must handle connection here instead on the ports directly 
+		'''
+		Must handle connection here instead on the ports directly 
 		because tkinter (and other GUI frameworks) block other widgets 
-		mouse events until the mouse is released.'''
+		mouse events until the mouse is released.
+		'''
 		# there are 3 cases of what the last entered port could be:
 		# 1. same port as dragged or nothing -> disconnect
 		# 2. other port of same gender -> do nothing
@@ -545,11 +597,11 @@ class GraphEditor(object):
 		if self.dragInput:
 			if self.dropPort is self.dragInput or self.dropPort is None:
 				# disconnect
-				self.dragInput.input.disconnect()
+				self.dragInput.inp.disconnect()
 				self.dragInput.defaultVisible(True)
 			elif type(self.dropPort) is OutputVisual:
 				# connect
-				self.dragInput.input.connect(self.dropPort.output)
+				self.dragInput.inp.connect(self.dropPort.out)
 				self.dragInput.defaultVisible(False)
 				self.dropPort.resultVisible(False)
 		
@@ -558,7 +610,7 @@ class GraphEditor(object):
 			# (no disconnection handling because it may has multiple connections)
 			if type(self.dropPort) is InputVisual:
 				# connect
-				self.dragOutput.output.connect(self.dropPort.input)
+				self.dragOutput.out.connect(self.dropPort.inp)
 				self.dragOutput.resultVisible(False)
 				self.dropPort.defaultVisible(False)
 		
@@ -571,7 +623,10 @@ class GraphEditor(object):
 		self.bg.after_idle(self.drawConns)
 	
 	def drawSpline(self, inPos, outPos):
-		'''Draws a spline on the background between inPos and outPos.'''
+		'''
+		Draws a spline on the background between inPos and outPos
+		:param inPos/outPos: 2D position
+		'''
 		xDiff = inPos.x-outPos.x
 		protude = min(100, abs(xDiff)*0.4)
 		self.bg.create_line(
@@ -580,16 +635,18 @@ class GraphEditor(object):
 			smooth=1, fill=COL_MAIN, width=int(self.curZoom*2))
 	
 	def drawConns(self):
-		'''Draws the current connections in the background'''
+		'''
+		Draws the current connections in the background
+		'''
 		self.bg.delete(tk.ALL) # clear old content
 		# draw existing connections
 		for node in self.graph.nodes:
-			for input in node.inputs:
-				if input.isConnected():
-					output = input.connOutput # connected counterpart
+			for inp in node.inputs:
+				if inp.isConnected():
+					out = inp.connOutput # connected counterpart
 					# get port positions
-					inPos = self.widgetCenterPos(input.visual.port)
-					outPos = self.widgetCenterPos(output.visual.port)
+					inPos = self.widgetCenterPos(inp.visual.port)
+					outPos = self.widgetCenterPos(out.visual.port)
 					# draw spline
 					self.drawSpline(inPos, outPos)
 		
@@ -603,7 +660,8 @@ class GraphEditor(object):
 
 
 class NodeDatabase(object):
-	'''For instantiating nodes from the package modules
+	'''
+	For instantiating nodes from the package modules
 	'''
 	def __init__(self, graphEditor):
 		self.graphEditor = graphEditor
@@ -645,7 +703,9 @@ class NodeDatabase(object):
 		self.menu.add_command(label='Search...', underline=0, command=self.openSearch)
 	
 	def makeNodeMenu(self, member, pgkName, parentMenu, nodeDict={}):
-		'''Recursively calls to catch all nodes in the import hierarchy'''
+		'''
+		Recursively calls to catch all nodes in the import hierarchy
+		'''
 		# get import path (module) or class name (class)
 		memName = member.__name__ if hasattr(member, '__name__') else ''
 		
@@ -682,7 +742,9 @@ class NodeDatabase(object):
 				self.makeNodeMenu(mem[1], pgkName, memMenu, nodeDict)
 	
 	def showSearchResults(self, term):
-		'''Makes a list containing node names matching the searchterm'''
+		'''
+		Makes a list containing node names matching the searchterm
+		'''
 		# clear old results
 		for child in self.searchResults.winfo_children():
 			child.destroy()
@@ -698,35 +760,46 @@ class NodeDatabase(object):
 				found.pack(fill=tk.X)
 	
 	def openSearch(self):
-		'''Shows the search panel'''
+		'''
+		Shows the search panel
+		'''
 		self.searchPanel.pack()
 		self.searchField.focus_set()
 	
 	def closeSearch(self):
-		'''Resets search term hides the search panel'''
+		'''
+		Resets search term hides the search panel
+		'''
 		self.searchTerm.set('')
 		self.searchPanel.pack_forget()
 		self.graphEditor.bg.focus_set()
 	
 	def onSearching(self, *args):
-		'''Shows the search panel'''
+		'''
+		Shows the search panel
+		'''
 		self.showSearchResults(self.searchTerm.get())
 	
 	def selectFirstResult(self):
-		'''Spawns first node in search result list'''
+		'''
+		Spawns first node in search result list
+		'''
 		results = self.searchResults.winfo_children()
 		if results:
 			first = results[0]
 			self.selectResult(self.nodesDict[first.cget('text')])
 	
 	def selectResult(self, nodePath):
-		'''Spawns the node and closes the search'''
+		'''
+		Spawns the node and closes the search
+		'''
 		self.graphEditor.spawnNode(nodePath)
 		self.closeSearch()
 
 
 class LogHandler(object):
-	'''Logging and warnings
+	'''
+	Logging and warnings
 	'''
 	def __init__(self, app):
 		self.app = app
@@ -756,7 +829,9 @@ class LogHandler(object):
 		self.enableLog(False) # initially, disable normal logs
 	
 	def enableLog(self, enable):
-		'''Enables/Disables logging and shows/hides the log scroll'''
+		'''
+		Enables/Disables logging and shows/hides the log scroll
+		'''
 		self.enabled = enable
 		if enable:
 			# slow, but comprehensive logging
@@ -769,24 +844,32 @@ class LogHandler(object):
 			self.setLogLevel(logging.WARNING)
 	
 	def setLogLevel(self, level):
-		'''Sets all package related loggers to a new level.
+		'''
+		Sets all package related loggers to a new level.
 		This results in better performance, but other log handlers 
-		won't see messages below level too of course.'''
+		won't see messages below level too of course.
+		'''
 		for logger in self.loggers:
 			logger.setLevel(level)
 	
 	def warn(self, warning):
-		'''Shows a warning'''
+		'''
+		Shows a warning
+		'''
 		self.alert.config(text=self.alert.cget('text')+warning)
 		self.alert.pack()
 	
 	def resetWarning(self):
-		'''Resets the warnings in the alert panel.'''
+		'''
+		Resets the warnings in the alert panel
+		'''
 		self.alert.config(text='')
 		self.alert.pack_forget()
 	
 	def write(self, msg):
-		'''This method is called from the logging module for each message'''
+		'''
+		This method is called from the logging module for each message
+		'''
 		if any(lvl in msg for lvl in ('WARNING', 'ERROR', 'CRITICAL')):
 			# user needs attention
 			self.warn(msg)
@@ -796,11 +879,15 @@ class LogHandler(object):
 			self.logScroll.insert(tk.END, msg)
 	
 	def flush(self):
-		'''This method might be called from the logging module'''
+		'''
+		This method might be called from the logging module
+		'''
 		pass
 	
 	def tail(self):
-		'''Scrolls down to the last messages'''
+		'''
+		Scrolls down to the last messages
+		'''
 		if self.enabled:
 			self.logScroll.see(tk.END) # super useful but super slow
 	
@@ -809,7 +896,8 @@ class LogHandler(object):
 
 
 class FlowApp(object):
-	'''Main window of the application
+	'''
+	Main window of the application
 	'''
 	def __init__(self):
 		self.root = tk.Tk()
@@ -859,7 +947,9 @@ class FlowApp(object):
 		menubar.add_cascade(label='File', menu=fileMenu)
 	
 	def onOpen(self):
-		'''Opens a json file containing a graph.'''
+		'''
+		Opens a json file containing a graph
+		'''
 		filepath = tkFileDialog.askopenfilename()
 		if filepath: # not canceled
 			self.onClear() # clear old graph
@@ -871,7 +961,9 @@ class FlowApp(object):
 					log.error('Invalid graph file')
 	
 	def onSave(self):
-		'''Saves the current graph as a json encoded file.'''
+		'''
+		Saves the current graph as a json encoded file
+		'''
 		filepath = tkFileDialog.asksaveasfilename()
 		if filepath: # not canceled
 			graphDict = self.graphEditor.toDict()
@@ -887,9 +979,11 @@ class FlowApp(object):
 		self.root.quit()
 	
 	def addTool(self, icon, callback, side=tk.LEFT):
-		'''Creates a button with icon.
+		'''
+		Creates a button with icon.
 		:param icon: icon file name
-		:param callback: function to fire when button is clicked'''
+		:param callback: function to fire when button is clicked
+		'''
 		# get icon path in the package
 		pkgPath = os.path.dirname(__file__)
 		iconPath = os.path.join(pkgPath, 'gui_icons')
@@ -902,7 +996,9 @@ class FlowApp(object):
 		btn.pack(side=side)
 	
 	def makeToolbar(self):
-		'''Creates the toolbar with icons for controlling the graph.'''
+		'''
+		Creates the toolbar with icons for controlling the graph
+		'''
 		# make toolbar
 		self.toolbar = tk.Frame(self.root, bg=COL_PRIM)
 		self.toolbar.pack(side=tk.TOP, fill=tk.X)
@@ -918,14 +1014,14 @@ class FlowApp(object):
 			bg=COL_PRIM, fg=COL_HL).pack(side=tk.RIGHT, padx=10)
 	
 	def graphReady(self):
-		''':returns: True if graph is ready, False else'''
+		'''
+		:returns: True if graph is ready, False else
+		'''
 		# check if there is even a graph
 		if not self.graphEditor.graph.nodes:
 			return False
 		# stop already running graph
 		return self.stopGraph()
-		# graph is ready
-		return True
 	
 	def stopGraph(self):
 		'''Tries to stop a running graph.
@@ -946,7 +1042,7 @@ class FlowApp(object):
 	def _graphRun(self, stopper):
 		try:
 			self.stats.set('processing...')
-			results, iterCount, iterTime = self.graphEditor.graph.process(stopper)
+			_, iterCount, iterTime = self.graphEditor.graph.process(stopper)
 			self.stats.set('{} | {:.2f} ms'.format(iterCount, 1e3*iterTime))
 		except:
 			self.stats.set('')
@@ -956,7 +1052,9 @@ class FlowApp(object):
 		stopper.clear()
 	
 	def onRun(self):
-		'''Runs the graph and shows the results.'''
+		'''
+		Runs the graph and shows the results
+		'''
 		if not self.graphReady():
 			return
 		
@@ -966,7 +1064,9 @@ class FlowApp(object):
 		self.graphThread.start()
 	
 	def onStep(self):
-		'''Runs graph step-by-step, i.e. one node process at a call.'''
+		'''
+		Runs graph step-by-step, i.e. one node process at a call
+		'''
 		if not self.graphReady():
 			return
 		
@@ -990,11 +1090,14 @@ class FlowApp(object):
 		self.step += 1
 	
 	def onReset(self):
-		'''Resets the graph prior to run.'''
+		'''
+		Resets the graph prior to run
+		'''
 		if not self.graphReady():
 			return
 		
 		self.logHandler.clear() # clear log
+		self.logHandler.resetWarning() # reset warning
 		self.stats.set('')
 		try:
 			self.graphEditor.graph.prepare()
@@ -1007,7 +1110,9 @@ class FlowApp(object):
 		self.step = 0
 	
 	def onClear(self):
-		'''Clears graph, i.e. delete all nodes.'''
+		'''
+		Clears graph, i.e. delete all nodes
+		'''
 		if not self.graphReady():
 			return
 		
@@ -1017,13 +1122,18 @@ class FlowApp(object):
 			self.graphEditor.deleteNode(nodeName)
 	
 	def onLogEnable(self):
-		'''Enables or disables the log'''
+		'''
+		Toggle log enabled
+		'''
 		self.logHandler.enableLog(not self.logHandler.enabled)
 
 
 def startApp():
-	'''starts the GUI'''
+	'''
+	starts the GUI
+	'''
 	FlowApp()
+
 
 if __name__ == '__main__':
 	startApp()

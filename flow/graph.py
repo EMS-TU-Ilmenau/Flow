@@ -6,21 +6,26 @@ import importlib, inspect # for instantiating nodes from class path
 log = logging.getLogger(__name__)
 
 def shortString(data, maxLen=40):
-	''':param data: any data whoch can be converted to a string
+	'''
+	:param data: any data which can be converted to a string
 	:param maxLen: maximum string length to output
-	:returns: data as shortened string, showing only beginning and end'''
+	:returns: data as shortened string, showing only beginning and end
+	'''
 	dataStr = str(data)
 	if dataStr == 'None':
 		return ''
 	if len(dataStr) > maxLen:
-		return '{}...{}'.format(dataStr[:maxLen/2], dataStr[-maxLen/2:])
+		return '{}...{}'.format(
+			dataStr[:int(maxLen/2)], dataStr[-int(maxLen/2):])
 	else:
 		return dataStr
 
 def uniqueName(names, name):
-	''':param names: list of string names
+	'''
+	:param names: list of string names
 	:param name: name which needs to be different from the names in the list
-	:returns: (modified) unique name'''
+	:returns: (modified) unique name
+	'''
 	# check if name is already unique
 	if not any(n == name for n in names):
 		return name
@@ -35,12 +40,15 @@ def uniqueName(names, name):
 			newName = '{}.{}'.format(name, 1)
 		return uniqueName(names, newName)
 
+
 class Graph(object):
-	'''Stores and manages nodes.
+	'''
+	Stores and manages nodes.
 	'''
 	
 	def __init__(self, path=None):
-		''':param path: json formatted graph-file path
+		'''
+		:param path: json formatted graph-file path
 		'''
 		self.nodeDict = {} # create dictionary for the nodes
 		self.nodesRunOrder = None
@@ -53,39 +61,48 @@ class Graph(object):
 		self.clear() # delete all nodes before deleting the graph
 	
 	def __str__(self):
-		'''Shows the current nodes and their connections as string.'''
-		str = 'Nodes:'
+		'''
+		Shows the current nodes and their connections as string.
+		'''
+		graphStr = ''
 		for node in self.nodes:
 			# node name
-			str += '\n\n{}'.format(node.name)
-			for input in node.inputs:
+			graphStr += '\n{}'.format(node.name)
+			
+			for inp in node.inputs:
 				# format inputs name and default
-				defaultStr = shortString(input.default)
-				str += '\n> {}{}'.format(input.name, 
-					':{}'.format(defaultStr) if defaultStr else '')
-				if input.isConnected():
+				defaultStr = shortString(inp.default)
+				graphStr += '\n> {}{}'.format(inp.name, 
+					': {}'.format(defaultStr) if defaultStr else '')
+				if inp.isConnected():
 					# format input connection
-					str += ' o-o {}.{}'.format(
-						input.connOutput.node.name, input.connOutput.name)
-			for output in node.outputs:
+					graphStr += ' o-o {}.{}'.format(
+						inp.connOutput.node.name, inp.connOutput.name)
+			
+			for out in node.outputs:
 				# format outputs name and result
-				resultStr = shortString(output.result)
-				str += '\n< {}{}'.format(output.name, 
-					':{}'.format(resultStr) if resultStr else '')
-				if output.isConnected():
+				resultStr = shortString(out.result)
+				graphStr += '\n< {}{}'.format(out.name, 
+					': {}'.format(resultStr) if resultStr else '')
+				if out.isConnected():
 					# format output connections
-					str += ' o-o '
-					str += ', '.join('{}.{}'.format(
-						ci.node.name, ci.name) for ci in output.connInputs)
-		return str
+					graphStr += ' o-o '
+					graphStr += ', '.join('{}.{}'.format(
+						inp.node.name, inp.name) for inp in out.connInputs)
+			
+			graphStr += '\n'
+		
+		return graphStr
 	
 	@property
 	def nodes(self):
 		return self.nodeDict.values()
 	
 	def addNode(self, node):
-		'''Adds a node object to the graph.
-		:param node: node object'''
+		'''
+		Adds a node object to the graph.
+		:param node: node object
+		'''
 		# give unique name
 		name = uniqueName(self.nodeDict.keys(), node.name)
 		node.name = name
@@ -93,12 +110,15 @@ class Graph(object):
 		return node
 	
 	def removeNode(self, name):
-		''':param name: nodes graph name to remove'''
+		'''
+		:param name: nodes graph name to remove
+		'''
 		self.nodeDict[name].disconnect()
 		self.nodeDict.pop(name)
 	
 	def clear(self):
-		'''Deletes all nodes in the graph.
+		'''
+		Deletes all nodes in the graph.
 		'''
 		self.nodeDict.clear()
 		# clean up properties from prepare
@@ -106,10 +126,12 @@ class Graph(object):
 		self.loopInputs = None
 	
 	def nodeFromDatabase(self, classPath, name=''):
-		'''Instantiates a node from the database.
+		'''
+		Instantiates a node from the database.
 		:param classPath: string like "package.module.NodeClassName"
 		:param name: optional name for re-naming the node
-		:returns: node instance'''
+		:returns: node instance
+		'''
 		# get module/class seperator
 		sep = classPath.rfind('.')
 		modName = classPath[:sep] # module name
@@ -127,7 +149,8 @@ class Graph(object):
 		raise ImportError('Node {} cannot be found in {}'.format(clsName, modName))
 	
 	def fromDict(self, graphDict):
-		'''Builds nodes and connections from json formatted string.
+		'''
+		Builds nodes and connections from json formatted string.
 		
 		:param graphDict: dictionary ("connection" and "default" may be null):
 			{"nodes": {
@@ -154,19 +177,20 @@ class Graph(object):
 		# go through a second time to update default and connect
 		for nodeName, nodeEntry in graphDict['nodes'].items():
 			node = self.nodeDict[nodeName] # get the already created node
-			for input in node.inputs:
-				inputEntry = nodeEntry['inputs'][input.name]
+			for inp in node.inputs:
+				inputEntry = nodeEntry['inputs'][inp.name]
 				# set default
-				input.default = inputEntry.get('default')
+				inp.default = inputEntry.get('default')
 				# set connection
 				conn = inputEntry.get('connection')
 				if conn:
 					connNode = self.nodeDict[conn['node']]
-					connOutput = connNode.getOutput(conn['output'])
-					input.connect(connOutput)
+					connOutput = connNode.output[conn['output']]
+					inp.connect(connOutput)
 	
 	def fromFile(self, path):
-		'''Builds nodes and connections from json formatted file
+		'''
+		Builds nodes and connections from json formatted file
 		'''
 		file = open(path)
 		jsonStr = file.read() # read whole file
@@ -176,17 +200,23 @@ class Graph(object):
 		log.info('Built graph from file')
 	
 	def getSources(self):
-		''':returns: list with the source nodes'''
-		return list(filter(lambda node: all(not input.isConnected() 
-			for input in node.inputs), self.nodes))
+		'''
+		:returns: list with the source nodes
+		'''
+		return list(filter(lambda node: all(not inp.isConnected() 
+			for inp in node.inputs), self.nodes))
 		
 	def getSinks(self):
-		''':returns: list with the sink nodes'''
-		return list(filter(lambda node: all(not output.isConnected() 
-			for output in node.outputs), self.nodes))
+		'''
+		:returns: list with the sink nodes
+		'''
+		return list(filter(lambda node: all(not out.isConnected() 
+			for out in node.outputs), self.nodes))
 	
 	def getRunOrder(self):
-		''':returns: list of nodes in a layer-wise execution order'''		
+		'''
+		:returns: list of nodes in a layer-wise execution order
+		'''		
 		# get source nodes first
 		sourceNodes = self.getSources()
 		if not sourceNodes:
@@ -203,6 +233,7 @@ class Graph(object):
 				if iNode > len(self.nodes):
 					log.error('Cannot solve run order. Using a suboptimal order.')
 					return self.nodes
+		
 		orderedNodes = sourceNodes
 		
 		# now go down the hierachy layer-wise until all nodes are in the list once
@@ -211,8 +242,8 @@ class Graph(object):
 			nextLayer = []
 			for node in curLayer:
 				# in each layer, get the next connected nodes
-				for output in node.outputs:
-					for connInput in output.connInputs:
+				for out in node.outputs:
+					for connInput in out.connInputs:
 						connNode = connInput.node
 						# if the node was unknown yet, append it to the order list
 						# also append it to the next layer
@@ -225,7 +256,8 @@ class Graph(object):
 		return orderedNodes
 	
 	def getInputLoop(self, startInput, curInput=None, loopInputs=[]):
-		'''Checks recursively if an input is connected in 
+		'''
+		Checks recursively if an input is connected in 
 		a loop with itself somehow in the graph.
 		
 		:param startInput: the input to be checked for being in a loop
@@ -248,7 +280,8 @@ class Graph(object):
 			return None
 	
 	def getLoops(self):
-		'''Checks for all loops in the graph.
+		'''
+		Checks for all loops in the graph.
 		Loops basically work, but there needs to be at least 
 		1 input with a default value in the loop.
 		
@@ -256,9 +289,9 @@ class Graph(object):
 		'''
 		loops = []
 		for nodeName, node in self.nodeDict.items():
-			for input in node.inputs:
-				if input not in loops: # don't search within found loop again
-					loop = self.getInputLoop(input)
+			for inp in node.inputs:
+				if inp not in loops: # don't search within found loop again
+					loop = self.getInputLoop(inp)
 					if loop:
 						# input is part of a loop
 						loops.extend(loop)
@@ -270,12 +303,13 @@ class Graph(object):
 								break
 						if not hasDefault:
 							# loops can only work when a default value was given
-							raise ValueError('\n\nLoop detected, but no default value was assigned e.g. at {} of {}'.format(
-								input.name, nodeName))
+							raise ValueError('Loop detected, but no default value was assigned e.g. at {} of {}'.format(
+								inp.name, nodeName))
 		return loops
 	
 	def prepare(self):
-		'''Prepare the graph before process.
+		'''
+		Prepare the graph before process.
 		This will get the optimal run order of node execution, 
 		check for loops in the graph and init the source buffers.
 		'''		
@@ -293,7 +327,8 @@ class Graph(object):
 			logging.warning('Loop detected. The graph may run forever')
 	
 	def process(self, abort=None):
-		'''Runs the "collect" method in each node in the run order 
+		'''
+		Runs the "collect" method in each node in the run order 
 		until an abort condition is met.
 		:param abort: object with an "is_set()" method, 
 			which must return True or False
@@ -336,7 +371,8 @@ class Graph(object):
 		return results, iterCount, iterTime
 	
 	def nothingToDo(self):
-		'''Abort condition for a process.
+		'''
+		Abort condition for a process.
 		The challenge here is dealing with loops and data decimating nodes.
 		:returns: True when there is nothing to process, or False when not
 		'''
@@ -344,11 +380,12 @@ class Graph(object):
 		return all(not node.busy for node in self.nodes)
 	
 	def getResults(self):
-		''':returns: list of dictionaries with the sink nodes 
+		'''
+		:returns: list of dictionaries with the sink nodes 
 			result values and corresponding node/output names.
 		'''
 		results = []
 		for sink in self.getSinks():
-			for output in sink.outputs:
-				results.append({'result': output.result, 'node': sink.name, 'output': output.name})
+			for out in sink.outputs:
+				results.append({'result': out.result, 'node': sink.name, 'output': out.name})
 		return results
