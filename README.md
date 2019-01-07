@@ -16,16 +16,20 @@ No dependencies needed, even for the GUI.
 Runs on Python 2 and 3 and macOS, Linux and Windows.
 
 #### Backend
-To use the backend ([graph](flow/graph.py) and [node](flow/node.py)) without the GUI, run [test_graph.py](test_graph.py) with a graph file as argument:
+To test a graph from file using [graph](flow/graph.py) and [node](flow/node.py) without the GUI, run [test_graph.py](test_graph.py) with a graph file as argument:
 
 `python test_graph.py examples/loop.json`
+
+A more comprehensive example where new node classes are created and mixed with nodes from the package and connected in an ad-hoc graph can be found in [test_mix.py](test_mix.py):
+
+`python test_mix.py`
 
 #### GUI
 To use the [GUI](flow/gui.py), run [test_gui.py](test_gui.py):
 
 `python test_gui.py`
 
-Open and save graphs using the **File menu**.
+Open and save graphs (*.json* files, see [examples](examples/)) using the **File menu**.
 You can add nodes by **right-clicking** on the dark background and choose a node from the tree.
 **Scroll** on the dark background to zoom and **Left drag** to pan the graph.
 Add more nodes and connect them or test what happens when you just hit the **run** button (the triangle without the pipe).
@@ -66,7 +70,7 @@ class MyNode(Node):
 		self.addOutput('b')
 	
 	def process(self, a):
-		self.getOutput('b').push(a)
+		self.output['b'].push(a)
 ```
 
 This node will just forward any data it gets on input a to output b.
@@ -97,11 +101,11 @@ For more examples, have a look at the already existing [nodes](flow/nodes/).
 
 #### Hints
 - Only **[JSON](https://www.w3schools.com/js/js_json_datatypes.asp) compatible default values** must be passed as default values! For other porttypes, specify the `ptype` argument, e.g. ptype=Ptype.COMPLEX.
-- When calling `addInput`/`addOutput` an input/output object will be returned. It is strongly advised to **store the output as a class variable** like in the second example, as accessing it that way (later in the process method) is faster than via `getOutput`.
+- When calling `addInput`/`addOutput` an input/output object will be returned, so it can be stored in a class variable like in the second example, or via the `self.input`/`self.output` dictionaries using the corresponding name as key.
 - In order to load the node in the GUI, two things are of importance:
 	- The line `Node.__init__(self, 'My nodes name')` or `super(MyNode, self).__init__('My nodes name')` (you can use single or double quotes for the name)
 	- The class needs to be importable from the [nodes](flow/nodes/) directory in the package.
-- When an output is connected to more than one input, a deep copy of the data is automatically passed to each extra connected input. This may be performance loss, but prevents a lot of trouble if data is of reference type and is intuitive for the user.
+- When an output is connected to **more** than one input, a deep copy of the data is automatically passed to each extra connected input. This may be a performance loss, but prevents a lot of trouble if data is of reference type and is intuitive for the user.
 
 #### Make a new module or package
 When making a bunch of new node classes that are needed in a specific field (e.g. plotting, signal processing, device controls, ...) it is a good idea to make a new node package.
