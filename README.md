@@ -110,10 +110,11 @@ For more examples, have a look at the already existing [nodes](flow/nodes/).
 #### Make a new module or package
 When making a bunch of new node classes that are needed in a specific field (e.g. plotting, signal processing, device controls, ...) it is a good idea to make a new node package.
 
-The root of all node modules is [nodes](flow/nodes/).
+##### Internal nodes
+The root of all internal node modules is [nodes](flow/nodes/).
 There could be even packages, which can contain modules, and other packages, to specialize even further.
 
-Let's say we want to make a module `my_fancy_nodes.py` in its own package `my_fancy_lib`:
+Let's say we want to make a module `my_fancy_nodes.py` in its own sub-package `my_fancy_lib`:
 - Create a folder in `nodes` and name it `my_fancy_lib`.
 - Open the `__init__.py` file in `nodes` and add `from . import my_fancy_lib` to the end. Save, close.
 - Enter the newly created folder and create a file named `my_fancy_nodes.py`.
@@ -128,6 +129,17 @@ Right-click in the editor and the pop-up menu will show the newly created hierar
 - Open the `__init__.py` file in the `my_fancy_lib` folder.
 - Change `from . import my_fancy_nodes` to `from .my_fancy_nodes import *`
 - Add a new line with `del my_fancy_nodes`. Save, close.
+
+##### External nodes
+In case you don't want to change this project, but be able to make and use more nodes, proceed as follow:
+- Simply create one or more node packages as described [above](#internal-nodes), but instead of putting it into `nodes`, put it anywhere outside the project
+- In your GUI starter, you need to specify the node package paths you want to load:
+
+	```python
+	from flow import gui
+	extNodes = ('external_nodes', 'C:/Path/To/other_node_lib') # example node package paths
+	gui.startApp(extNodes)
+	```
 
 ## Concept
 The general concept is called *flow based programming* (**FBP**). 
@@ -168,17 +180,3 @@ The above problem could only be solved by restricting the graph to only process 
 When multiple outputs pull from the same source, which would change its data, data is not synchronized anymore.
 Imagine a node generating a random sample on each pull request.
 When multiple connected nodes pull from that noise-generator, the data is not synchronized.
-
-## Third party packages
-The existing nodes are quite generic and merely examples for demonstration purposes.
-
-For real projects, proceed as follow:
-- Install this project using `pip install .` or `pip install --user .` after `cd` to the cloned project
-- Create one or more node packages as described [above](#-Make-a-new-module-or-package)
-- In your GUI starter, you need to specify the node package paths you want to load:
-
-	```python
-	from flow import gui
-	extNodes = ('external_nodes', 'C:/Path/To/other_node_lib') # example node package paths
-	gui.startApp(extNodes)
-	```
