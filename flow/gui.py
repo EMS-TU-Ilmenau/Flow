@@ -170,7 +170,7 @@ class InputVisual(object):
 			fg=COL_DTYPE.get(self.input.ptype, COL_DTYPE[Ptype.OBJECT]), 
 			cursor='crosshair')
 		self.port.pack(side=tk.LEFT)
-		self.port.inp = self # retrieve with: getattr(widget, 'input', None)
+		self.port.input = self # retrieve with: getattr(widget, 'input', None)
 		self.port.bind('<Button-1>', self.onConnDrag)
 		self.port.bind('<ButtonRelease-1>', self.nodeVisual.graphEditor.onConnDrop)
 		
@@ -289,7 +289,7 @@ class OutputVisual(object):
 			fg=COL_DTYPE.get(self.output.ptype, COL_DTYPE[Ptype.OBJECT]), 
 			cursor='crosshair')
 		self.port.pack(side=tk.RIGHT)
-		self.port.out = self
+		self.port.output = self
 		self.port.bind('<Button-1>', self.onConnDrag)
 		self.port.bind('<ButtonRelease-1>', self.nodeVisual.graphEditor.onConnDrop)
 		
@@ -598,11 +598,11 @@ class GraphEditor(object):
 		if self.dragInput:
 			if self.dropPort is self.dragInput or self.dropPort is None:
 				# disconnect
-				self.dragInput.inp.disconnect()
+				self.dragInput.input.disconnect()
 				self.dragInput.defaultVisible(True)
 			elif type(self.dropPort) is OutputVisual:
 				# connect
-				self.dragInput.inp.connect(self.dropPort.out)
+				self.dragInput.input.connect(self.dropPort.output)
 				self.dragInput.defaultVisible(False)
 				self.dropPort.resultVisible(False)
 		
@@ -611,7 +611,7 @@ class GraphEditor(object):
 			# (no disconnection handling because it may has multiple connections)
 			if type(self.dropPort) is InputVisual:
 				# connect
-				self.dragOutput.out.connect(self.dropPort.inp)
+				self.dragOutput.output.connect(self.dropPort.input)
 				self.dragOutput.resultVisible(False)
 				self.dropPort.defaultVisible(False)
 		
