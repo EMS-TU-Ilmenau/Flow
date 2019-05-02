@@ -1080,7 +1080,7 @@ class FlowApp(object):
 		if not self.graphReady():
 			return
 		
-		if not self.graphEditor.graph.nodesRunOrder:
+		if not self.graphEditor.graph.prepared:
 			self.onReset()
 		runOrder = self.graphEditor.graph.nodesRunOrder
 		# get last processed node to reset highlight

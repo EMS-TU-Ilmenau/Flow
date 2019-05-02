@@ -1,5 +1,5 @@
 import json # for parsing JSON formatted graph files
-import time # for measuring processing time
+from timeit import default_timer # for measuring processing time
 import logging # for debugging the dataflow
 import importlib, inspect # for instantiating nodes from class path
 
@@ -53,6 +53,7 @@ class Graph(object):
 		self.nodeDict = {} # create dictionary for the nodes
 		self.nodesRunOrder = None
 		self.loopInputs = None
+		self.prepared = False
 		# optionally build graph from file
 		if path:
 			self.fromFile(path)
@@ -325,6 +326,8 @@ class Graph(object):
 		self.loopInputs = self.getLoops()
 		if self.loopInputs:
 			logging.warning('Loop detected. The graph may run forever')
+		
+		self.prepared = True
 	
 	def process(self, abort=None):
 		'''
@@ -335,11 +338,11 @@ class Graph(object):
 		:returns: result dictionary, number of iterations, iteration time
 		'''
 		log.debug(str(self))
-		if not self.nodesRunOrder:
-			self.prepare() # someone forgot to prepare the graph...
+		if not self.prepared:
+			self.prepare() # prepare graph
 		
 		log.info('Graph processing...')
-		startTime = time.clock()
+		startTime = default_timer()
 		iterTime = 0.
 		iterCount = 0
 		while(True):
@@ -357,12 +360,13 @@ class Graph(object):
 					break
 			
 			# some metrics for performance analysis
-			iterTime = time.clock()-startTime
+			iterTime = default_timer()-startTime
 			iterCount += 1
 		
 		# processing finished
 		log.info('Finished. Took {:.3f} ms and {} iterations'.format(iterTime*1e3, iterCount))
 		log.debug(str(self))
+		self.prepared = False
 		# notify the node in case it wants to clean up stuff
 		for node in self.nodes:
 			node.finish()
