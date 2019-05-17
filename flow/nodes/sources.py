@@ -1,4 +1,6 @@
 from flow.node import Node, Ptype
+import os
+import fnmatch
 
 class IntegerSource(Node):
 	'''
@@ -90,6 +92,7 @@ class RangeSource(Node):
 	def __init__(self, name):
 		Node.__init__(self, name)
 		self.arrOut = self.addOutput('array', Ptype.LIST)
+		self.elOut = self.addOutput('elements')
 		self.lenOut = self.addOutput('length', Ptype.INT)
 	
 	def seq(self, start, stop, step=1):
@@ -101,7 +104,7 @@ class RangeSource(Node):
 		# make array
 		n = abs(int(round((stop-start)/float(step))))
 		if n > 0:
-			return [start + step*i for i in range(n+1)]
+			return [start + step*i for i in range(n)]
 		else:
 			return []
 	
@@ -109,6 +112,8 @@ class RangeSource(Node):
 		arr = self.seq(start, stop, step)
 		self.arrOut.push(arr)
 		self.lenOut.push(len(arr))
+		for el in arr:
+			self.elOut.push(el)
 
 
 class IntegerRangeSource(RangeSource):
@@ -141,10 +146,40 @@ class FileSource(Node):
 	def __init__(self):
 		Node.__init__(self, 'File source')
 		self.addInput('filepath', '/Path/To/File.suffix', ptype=Ptype.FILE)
-		self.lineOut = self.addOutput('line', Ptype.STR)
+		self.addInput('aslines', True)
+		self.lineOut = self.addOutput('string', Ptype.STR)
 	
-	def process(self, filepath):
-		# push out all lines in one iteration
+	def process(self, filepath, aslines):
 		with open(filepath) as file:
-			for line in file:
-				self.lineOut.push(line)
+			if aslines:
+				# push out lines
+				for line in file:
+					self.lineOut.push(line)
+			else:
+				# push out whole file content
+				self.lineOut.push(file.read())
+
+
+class FileSearchSource(Node):
+	'''
+	Searches for files with pattern in name in directory
+	'''
+	def __init__(self):
+		Node.__init__(self, 'File search')
+		self.addInput('dirpath', '/Path/To/Directory', ptype=Ptype.FILE)
+		self.addInput('subdirs', False) # also search in subdirectories
+		self.addInput('pattern', '*')
+		self.filesOut = self.addOutput('files', Ptype.LIST)
+	
+	def process(self, dirpath, subdirs, pattern):
+		if subdirs:
+			# search in subdirectories
+			filepaths = []
+			for root, _, files in os.walk(dirpath):
+				paths = [os.path.relpath(os.path.join(root, filename), dirpath) for filename in fnmatch.filter(files, pattern)]
+				filepaths.extend(paths)
+			self.filesOut.push(filepaths)
+		else:
+			# search only in specified directory
+			files = fnmatch.filter(os.listdir(dirpath), pattern)
+			self.filesOut.push(files)
