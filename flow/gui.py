@@ -864,7 +864,7 @@ class LogHandler(object):
 		'''
 		# append linefeed to current text
 		curText = self.alert.cget('text')
-		if not curText.endswith('\n'):
+		if curText and not curText.endswith('\n'):
 			curText += '\n'
 		# add warning to current text and show
 		self.alert.config(text=curText+warning)
