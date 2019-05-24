@@ -1,93 +1,93 @@
 {
+    "zoom": 1.5000000000000004,
     "nodes": {
-        "Int out": {
-            "inputs": {
-                "value": {
-                    "default": 2, 
-                    "connection": null
-                }
-            }, 
-            "pos": [
-                114, 
-                130
-            ], 
-            "class": "flow.nodes.sources.IntegerSource"
-        }, 
-        "Int out.1": {
-            "inputs": {
-                "value": {
-                    "default": 1, 
-                    "connection": {
-                        "node": "Multiplication", 
-                        "output": "c"
-                    }
-                }
-            }, 
-            "pos": [
-                292, 
-                328
-            ], 
-            "class": "flow.nodes.sources.IntegerSource"
-        }, 
         "Print": {
+            "pos": [
+                719,
+                246
+            ],
+            "class": "flow.nodes.sinks.Print",
             "inputs": {
                 "data": {
-                    "default": null, 
+                    "default": null,
                     "connection": {
-                        "node": "Multiplication", 
+                        "node": "Multiplication",
                         "output": "c"
                     }
                 }
-            }, 
-            "pos": [
-                707, 
-                272
-            ], 
-            "class": "flow.nodes.sinks.Print"
-        }, 
+            }
+        },
         "Replicate": {
+            "pos": [
+                283,
+                108
+            ],
+            "class": "flow.nodes.utility.Replicate",
             "inputs": {
                 "data": {
-                    "default": null, 
+                    "default": null,
                     "connection": {
-                        "node": "Int out", 
-                        "output": "int"
+                        "node": "Float out",
+                        "output": "float"
                     }
-                }, 
+                },
                 "n": {
-                    "default": 4, 
+                    "default": 4,
                     "connection": null
                 }
-            }, 
-            "pos": [
-                271, 
-                134
-            ], 
-            "class": "flow.nodes.utility.Replicate"
-        }, 
+            }
+        },
         "Multiplication": {
+            "pos": [
+                488,
+                142
+            ],
+            "class": "flow.nodes.operations.Mul",
             "inputs": {
                 "a": {
-                    "default": null, 
+                    "default": null,
                     "connection": {
-                        "node": "Replicate", 
+                        "node": "Replicate",
                         "output": "replicates"
                     }
-                }, 
+                },
                 "b": {
-                    "default": null, 
+                    "default": 1.0,
                     "connection": {
-                        "node": "Int out.1", 
-                        "output": "int"
+                        "node": "Float out.1",
+                        "output": "float"
                     }
                 }
-            }, 
+            }
+        },
+        "Float out": {
             "pos": [
-                469, 
-                162
-            ], 
-            "class": "flow.nodes.operations.Mul"
+                87,
+                128
+            ],
+            "class": "flow.nodes.sources.FloatSource",
+            "inputs": {
+                "value": {
+                    "default": 2.0,
+                    "connection": null
+                }
+            }
+        },
+        "Float out.1": {
+            "pos": [
+                487,
+                407
+            ],
+            "class": "flow.nodes.sources.FloatSource",
+            "inputs": {
+                "value": {
+                    "default": 1.0,
+                    "connection": {
+                        "node": "Multiplication",
+                        "output": "c"
+                    }
+                }
+            }
         }
-    }, 
-    "zoom": 1.5000000000000004
+    }
 }
