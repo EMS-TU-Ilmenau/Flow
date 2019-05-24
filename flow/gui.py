@@ -862,7 +862,12 @@ class LogHandler(object):
 		'''
 		Shows a warning
 		'''
-		self.alert.config(text=self.alert.cget('text')+warning)
+		# append linefeed to current text
+		curText = self.alert.cget('text')
+		if not curText.endswith('\n'):
+			curText += '\n'
+		# add warning to current text and show
+		self.alert.config(text=curText+warning)
 		self.alert.pack()
 	
 	def resetWarning(self):
