@@ -8,8 +8,8 @@ class Operation(Node):
 	def __init__(self, name):
 		Node.__init__(self, name)
 		# build inputs and outputs
-		self.addInput('a')
-		self.addInput('b')
+		self.addInput('a', 1.)
+		self.addInput('b', 2.)
 		self.res = self.addOutput('c')
 
 
