@@ -1,6 +1,8 @@
 from flow.node import Node, Ptype
-import os
-import fnmatch
+import os # for listing files in directories
+import fnmatch # for filtering filenames
+import random # for random numbers
+
 
 class IntegerSource(Node):
 	'''
@@ -136,6 +138,28 @@ class FloatRangeSource(RangeSource):
 		self.addInput('start', 0.)
 		self.addInput('step', 0.1)
 		self.addInput('stop', 1.)
+
+
+class NoiseSource(Node):
+	'''
+	Provides random float numbers on its output
+	'''
+	def __init__(self):
+		Node.__init__(self, 'Noise out')
+		self.addInput('low', 0.)
+		self.addInput('high', 1.)
+		self.addInput('gauss', False)
+		self.addInput('numElements', 1)
+		self.noiseOut = self.addOutput('float', Ptype.FLOAT)
+	
+	def process(self, low, high, gauss, numElements):
+		for _ in range(numElements):
+			if gauss:
+				mean = (low+high)/2.
+				std = (high-mean)/3. # 99% coverage should be enough
+				self.noiseOut.push(random.gauss(mean, std))
+			else:
+				self.noiseOut.push(random.uniform(low, high))
 
 
 class FileSource(Node):
