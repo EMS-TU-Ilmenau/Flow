@@ -156,7 +156,7 @@ class NoiseSource(Node):
 		for _ in range(numElements):
 			if gauss:
 				mean = (low+high)/2.
-				std = (high-mean)/3. # 99% coverage should be enough
+				std = (high-mean)/2. # 95% coverage should be enough
 				self.noiseOut.push(random.gauss(mean, std))
 			else:
 				self.noiseOut.push(random.uniform(low, high))
