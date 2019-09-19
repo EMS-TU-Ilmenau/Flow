@@ -180,3 +180,7 @@ The above problem could only be solved by restricting the graph to only process 
 When multiple outputs pull from the same source, which would change its data, data is not synchronized anymore.
 Imagine a node generating a random sample on each pull request.
 When multiple connected nodes pull from that noise-generator, the data is not synchronized.
+
+## Todo
+- Grouping to encapsulate multiple nodes
+- Making port type definitions and corresponding colors changeable from outside the package
