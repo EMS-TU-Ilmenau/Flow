@@ -45,19 +45,25 @@ if __name__ == '__main__':
 	# create average node
 	mean = graph.addNode(Mean())
 	'''
-	Also possible:
+	# also possible:
 	mean = Mean()
 	graph.addNode(mean)
 	'''
 	mean.input['array'].connect(noise.output['rnd']) # connect to noise output
 	'''
-	Also possible:
+	# also possible:
 	noise.output['rnd'].connect(mean.input['array'])
 	'''
 	
 	# create max node from package nodes
 	listMax = graph.addNode(graph.nodeFromDatabase('flow.nodes.utility.ArrayMax'))
 	listMax.input['array'].connect(noise.output['rnd']) # connect to noise output
+
+	'''
+	# in case you want to load a node from an external package:
+	graph.scopeExtNodes("path/to/myNodePkg")
+	graph.addNode(graph.nodeFromDatabase('myNodePkg.somemodule.NodeClassName'))
+	'''
 
 
 	# show graph overview

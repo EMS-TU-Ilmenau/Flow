@@ -132,12 +132,13 @@ Right-click in the editor and the pop-up menu will show the newly created hierar
 
 ##### External nodes
 In case you don't want to change this project, but be able to make and use more nodes, proceed as follow:
-- Simply create one or more node packages as described [above](#internal-nodes), but instead of putting it into `nodes`, put it anywhere outside the project
-- In your GUI starter, you need to specify the node package paths you want to load:
+- Simply create one or more node packages as described [above](#internal-nodes), but instead of putting it into `nodes`, put it anywhere outside the project.
+- You can also install node packages like every other package as well with `pip`. To load it, specify the package name(s) in `startApp`.
+- In your GUI starter, you need to specify the node package paths or names you want to load:
 
 	```python
 	from flow import gui
-	extNodes = ('external_nodes', 'C:/Path/To/other_node_lib') # example node package paths
+	extNodes = ['external_nodes', 'C:/Path/To/other_node_lib'] # example node package paths
 	gui.startApp(extNodes)
 	```
 

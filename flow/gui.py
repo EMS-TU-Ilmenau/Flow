@@ -338,8 +338,8 @@ class GraphEditor(object):
 		self.bg.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 		
 		# on right click, user can select a node from the database and spawn it
-		self.nodeDB = NodeDatabase(self)
 		self.graph = Graph() # logical graph
+		self.nodeDB = NodeDatabase(self)
 		self.bg.bind('<Button-2>', self.onRightDown) # macOS right-click
 		self.bg.bind('<Button-3>', self.onRightDown) # Windows and Linux right-click
 		self.spawnPos = Point(10, 10)
@@ -495,6 +495,14 @@ class GraphEditor(object):
 		
 		# set zoom level
 		self.curZoom = graphDict.get('zoom', self.curZoom)
+
+		# load optional external node packages
+		extPkgs = graphDict.get('packages')
+		if extPkgs:
+			try:
+				self.graph.scopeExtNodes(extPkgs)
+			except ImportError:
+				log.error('Could not import node package(s): {}'.format(extPkgs))
 		
 		# instantiate nodes from class
 		for nodeName, nodeEntry in graphDict['nodes'].items():
@@ -548,6 +556,8 @@ class GraphEditor(object):
 		'''
 		graphDict = {}
 		graphDict['zoom'] = self.curZoom
+		if self.app.extNodePkgs:
+			graphDict['packages'] = self.app.extNodePkgs
 		nodeEntries = {}
 		graphDict['nodes'] = nodeEntries
 		for node in self.graph.nodes:
@@ -692,10 +702,7 @@ class NodeDatabase(object):
 		# catch external nodes when available
 		for extPkg in self.graphEditor.app.extNodePkgs:
 			try:
-				# add package path to scope for importing
-				sys.path.append(putil.dirname(extPkg))
-				# import package
-				extNodes = importlib.import_module(putil.basename(extPkg))
+				extNodes = self.graphEditor.graph.scopeExtNodes(extPkg) # import package
 				self.makeNodeMenu(extNodes, extNodes.__name__, self.menu, self.nodesDict)
 			except ImportError:
 				log.error('Could not load external node lib "{}"'.format(extPkg))
@@ -910,9 +917,9 @@ class FlowApp(object):
 	'''
 	Main window of the application
 	'''
-	def __init__(self, extNodePkgs=()):
+	def __init__(self, extNodePkgs=[]):
 		'''
-		:param extNodePkgs: optional tuple with strings of external node packages to load
+		:param extNodePkgs: optional list with strings of external node packages to load
 		'''
 		self.root = tk.Tk()
 		self.root.protocol('WM_DELETE_WINDOW', self.onQuit) # window closing redirected to quit
@@ -1143,7 +1150,7 @@ class FlowApp(object):
 		self.logHandler.enableLog(not self.logHandler.enabled)
 
 
-def startApp(extNodePkgs=()):
+def startApp(extNodePkgs=[]):
 	'''
 	starts the GUI
 	'''

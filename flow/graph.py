@@ -2,6 +2,8 @@ import json # for parsing JSON formatted graph files
 from timeit import default_timer # for measuring processing time
 import logging # for debugging the dataflow
 import importlib, inspect # for instantiating nodes from class path
+import sys # for adding package to path
+import os.path as putil # for path utility
 
 log = logging.getLogger(__name__)
 
@@ -43,12 +45,13 @@ def uniqueName(names, name):
 
 class Graph(object):
 	'''
-	Stores and manages nodes.
+	Stores, manages and executes nodes.
 	'''
 	
 	def __init__(self, path=None):
 		'''
-		:param path: json formatted graph-file path
+		:param path: when set to a json formatted graph-file path, 
+			builds the graph from the file
 		'''
 		self.nodeDict = {} # create dictionary for the nodes
 		self.nodesRunOrder = None
@@ -63,7 +66,7 @@ class Graph(object):
 	
 	def __str__(self):
 		'''
-		Shows the current nodes and their connections as string.
+		Shows the current nodes and their connections as string
 		'''
 		graphStr = ''
 		for node in self.nodes:
@@ -101,7 +104,8 @@ class Graph(object):
 	
 	def addNode(self, node):
 		'''
-		Adds a node object to the graph.
+		Adds a node object to the graph
+
 		:param node: node object
 		'''
 		# give unique name
@@ -112,6 +116,8 @@ class Graph(object):
 	
 	def removeNode(self, name):
 		'''
+		Disconnects and removes a node object from the graph
+
 		:param name: nodes graph name to remove
 		'''
 		self.nodeDict[name].disconnect()
@@ -119,16 +125,40 @@ class Graph(object):
 	
 	def clear(self):
 		'''
-		Deletes all nodes in the graph.
+		Deletes all nodes in the graph
 		'''
 		self.nodeDict.clear()
 		# clean up properties from prepare
 		self.nodesRunOrder = None
 		self.loopInputs = None
 	
+	def scopeExtNodes(self, extNodePkgs):
+		'''
+		Imports external node package(s). 
+		Note: this does NOT add the nodes to the graph. In that case, use:
+			graph.scopeExtNodes("path/to/myPackage")
+			node = graph.nodeFromDatabase("myPackage.module.NodeClassName")
+			graph.addNode(node)
+		
+		:param extNodePkgs: string or list/tuple of strings with directory path(s)
+		'''
+		def importPkg(pkgPath):
+			# imports a package by directory path
+			sys.path.append(putil.dirname(pkgPath))
+			pkg = importlib.import_module(putil.basename(pkgPath))
+			return pkg
+		
+		if isinstance(extNodePkgs, (tuple, list)):
+			# import multiple node packages
+			for path in extNodePkgs:
+				importPkg(path)
+		else:
+			return importPkg(extNodePkgs) # import single package
+	
 	def nodeFromDatabase(self, classPath, name=''):
 		'''
-		Instantiates a node from the database.
+		Instantiates a node from the database
+
 		:param classPath: string like "package.module.NodeClassName"
 		:param name: optional name for re-naming the node
 		:returns: node instance
@@ -151,16 +181,17 @@ class Graph(object):
 	
 	def fromDict(self, graphDict):
 		'''
-		Builds nodes and connections from json formatted string.
+		Builds nodes and connections from json formatted string
 		
-		:param graphDict: dictionary ("connection" and "default" may be null):
+		:param graphDict: dictionary. Example:
+			[optional]{"packages": ["path/to/package"]}, 
 			{"nodes": {
 				"nodeA": {
 					"class": "package.module.NodeClassName", 
 					"inputs": {
 						"inputA": {
-							"connection": {"node": "nodeB", "output": "outputA"}, 
-							"default": 42
+							"connection": [may be null]{"node": "nodeB", "output": "outputA"}, 
+							"default": [may be null]42
 						}, 
 						"inputB": {...}
 					}
@@ -169,6 +200,11 @@ class Graph(object):
 			}}
 		'''
 		self.clear() # clean up old graph
+
+		# load optional external node packages
+		extPkgs = graphDict.get('packages')
+		if extPkgs:
+			self.scopeExtNodes(extPkgs)
 		
 		# instantiate nodes from class
 		for nodeName, nodeEntry in graphDict['nodes'].items():
@@ -192,6 +228,8 @@ class Graph(object):
 	def fromFile(self, path):
 		'''
 		Builds nodes and connections from json formatted file
+
+		:param path: json formatted graph-file path
 		'''
 		file = open(path)
 		jsonStr = file.read() # read whole file
@@ -259,7 +297,7 @@ class Graph(object):
 	def getInputLoop(self, startInput, curInput=None, loopInputs=[]):
 		'''
 		Checks recursively if an input is connected in 
-		a loop with itself somehow in the graph.
+		a loop with itself somehow in the graph
 		
 		:param startInput: the input to be checked for being in a loop
 		:returns: list of all inputs in the loop the startInput is in, 
@@ -284,7 +322,7 @@ class Graph(object):
 		'''
 		Checks for all loops in the graph.
 		Loops basically work, but there needs to be at least 
-		1 input with a default value in the loop.
+		1 input with a default value in the loop
 		
 		:returns: list of loops (a loop is a list of inputs)
 		'''
@@ -310,9 +348,9 @@ class Graph(object):
 	
 	def prepare(self):
 		'''
-		Prepare the graph before process.
+		Prepares the graph before process.
 		This will get the optimal run order of node execution, 
-		check for loops in the graph and init the source buffers.
+		check for loops in the graph and init the source buffers
 		'''		
 		# getting run order
 		self.nodesRunOrder = self.getRunOrder()		
@@ -332,7 +370,8 @@ class Graph(object):
 	def process(self, abort=None):
 		'''
 		Runs the "collect" method in each node in the run order 
-		until an abort condition is met.
+		until an abort condition is met
+
 		:param abort: object with an "is_set()" method, 
 			which must return True or False
 		:returns: result dictionary, number of iterations, iteration time
@@ -352,7 +391,7 @@ class Graph(object):
 				node.collect()
 			
 			# abort conditions
-			if self.nothingToDo():
+			if self.nothingToDo:
 				break
 			
 			if abort:
@@ -374,10 +413,9 @@ class Graph(object):
 		results = self.getResults()
 		return results, iterCount, iterTime
 	
+	@property
 	def nothingToDo(self):
 		'''
-		Abort condition for a process.
-		The challenge here is dealing with loops and data decimating nodes.
 		:returns: True when there is nothing to process, or False when not
 		'''
 		# check if all nodes cannot process
