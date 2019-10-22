@@ -61,7 +61,7 @@ if __name__ == '__main__':
 
 	'''
 	# in case you want to load a node from an external package:
-	graph.scopeExtNodes("path/to/myNodePkg")
+	graph.scopeNodePkg("path/to/myNodePkg")
 	graph.addNode(graph.nodeFromDatabase('myNodePkg.somemodule.NodeClassName'))
 	'''
 

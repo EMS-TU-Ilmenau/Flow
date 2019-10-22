@@ -500,7 +500,7 @@ class GraphEditor(object):
 		extPkgs = graphDict.get('packages')
 		if extPkgs:
 			try:
-				self.graph.scopeExtNodes(extPkgs)
+				self.graph.scopeNodePkg(extPkgs)
 			except ImportError:
 				log.error('Could not import node package(s): {}'.format(extPkgs))
 		
@@ -702,7 +702,7 @@ class NodeDatabase(object):
 		# catch external nodes when available
 		for extPkg in self.graphEditor.app.extNodePkgs:
 			try:
-				extNodes = self.graphEditor.graph.scopeExtNodes(extPkg) # import package
+				extNodes = self.graphEditor.graph.scopeNodePkg(extPkg) # import package
 				self.makeNodeMenu(extNodes, extNodes.__name__, self.menu, self.nodesDict)
 			except ImportError:
 				log.error('Could not load external node lib "{}"'.format(extPkg))

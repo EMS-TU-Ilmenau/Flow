@@ -132,11 +132,11 @@ class Graph(object):
 		self.nodesRunOrder = None
 		self.loopInputs = None
 	
-	def scopeExtNodes(self, extNodePkgs):
+	def scopeNodePkg(self, extNodePkgs):
 		'''
 		Imports external node package(s). 
 		Note: this does NOT add the nodes to the graph. In that case, use:
-			graph.scopeExtNodes("path/to/myPackage")
+			graph.scopeNodePkg("path/to/myPackage")
 			node = graph.nodeFromDatabase("myPackage.module.NodeClassName")
 			graph.addNode(node)
 		
@@ -204,7 +204,7 @@ class Graph(object):
 		# load optional external node packages
 		extPkgs = graphDict.get('packages')
 		if extPkgs:
-			self.scopeExtNodes(extPkgs)
+			self.scopeNodePkg(extPkgs)
 		
 		# instantiate nodes from class
 		for nodeName, nodeEntry in graphDict['nodes'].items():
