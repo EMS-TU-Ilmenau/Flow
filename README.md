@@ -39,12 +39,12 @@ You can reset or clear a graph using the other buttons.
 Press the **spacebar** or right click and choose "Search..." to search for nodes in the database.
 
 #### Porttypes
-The port types are just a rough orientation for the user when to connect nodes.
+The port types are just a rough orientation for the user to connect compatible nodes.
 Knowing if nodes can connect beforehand is impossible because beside the datatype, there would be other conditions why data could be incompatible, e.g. length of an vector, shape of tensors, etc.
 It would also be too restrictive to allow only same datatypes to connect, because a node could iterate over tuples and lists just fine for example.
 
 What they **do**:
-- Specify the port [color](flow/gui.py)
+- Specify the port color
 - Defines the GUI widgets as an interface for the user to input default values
 	- For `float` and `int`, the user can click and **drag** the inputs title to enter values more convenient
 	- For `file`, the user can **left-click** for an open file dialog and **right-click** for a save file dialog
@@ -74,29 +74,42 @@ class MyNode(Node):
 ```
 
 This node will just forward any data it gets on input a to output b.
-Here is a better example:
+Here is a more comprehensive example:
 
 ```python
 from flow.node import Node, Ptype
+
+Ptype.BLUB = '#ff0000' # define a new port type with color red
+
+class Blub(object):
+	'''Example data type for BLUB port type'''
+	def __init__(self, n):
+		self.n = int(n)
+	
+	def __str__(self):
+		return self.n*'Blub'
 
 class MyNode(Node):
 	def __init__(self):
 		super(MyNode, self).__init__('My nodes name')
 		# add some inputs, but at least 1
 		self.addInput('someInput') # no spaces allowed for input names
-		self.addInput('other', 3.0) # default defines porttype automatically
+		self.addInput('other', 3) # default value defines porttype automatically
 		self.addInput('bla', ptype=Ptype.BOOL) # no default, but type specified
 		# add some outputs, but at least 1
 		self.myOut = self.addOutput('out', Ptype.STR) # string type specified
+		self.addOutput('blubber', Ptype.BLUB)
 	
 	def process(self, someInput, other, bla):
 		# process inputs
 		result = '{}, {}, {}'.format(someInput, other, bla)
 		# push results
 		self.myOut.push(result)
+		self.output['blubber'].push(Blub(other))
 ```
 
-This node will format all inputs in a string which is pushed out from the output.
+This node will format all inputs in a string which is pushed out from the output. 
+It will also push out an instance of the *Blub* class whose name will be a string of *other* times concatenated "Blub"s.
 For more examples, have a look at the already existing [nodes](flow/nodes/).
 
 #### Hints
@@ -184,4 +197,3 @@ When multiple connected nodes pull from that noise-generator, the data is not sy
 
 ## Todo
 - Grouping to encapsulate multiple nodes
-- Making port type definitions and corresponding colors changeable from outside the package

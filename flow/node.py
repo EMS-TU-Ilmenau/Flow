@@ -3,40 +3,78 @@ import copy # for deep copying data when output pushes to multiple inputs
 
 log = logging.getLogger(__name__)
 
-class Ptype(object):
+class PortType(object):
 	'''
-	Input and output port type identifiers
+	Input or output port type
 	'''
-	OBJECT = 0 # generic/default
-	BOOL = 1
-	INT = 2
-	FLOAT = 3
-	COMPLEX = 4
-	DICT = 5
-	LIST = 6
-	TUPLE = 7
-	STR = 8
-	FILE = 9
+	def __init__(self, name, color, dtype):
+		self.name = name
+		self.color = color
+		self.dtype = dtype
 	
-	@classmethod
-	def fromObj(cls, obj):
+	def __repr__(self):
+		return '{}({})'.format(self.__class__.__name__, 
+			', '.join('{}={}'.format(k, v) for k, v in self.__dict__.items()))
+
+	def __str__(self):
+		return '{} {}'.format(self.name, self.color)
+
+
+class PortTypeManager(object):
+	'''
+	Port type manager to store port datatypes and colors
+	'''
+	def __init__(self):
+		self.__dict__['types'] = {}
+		# add main types
+		self._addType('OBJECT', '#D0D0D0')
+		self._addType('BOOL', '#101010', bool)
+		self._addType('INT', '#0080FF', int)
+		self._addType('FLOAT', '#25D4EF', float)
+		self._addType('COMPLEX', '#AC58FA')
+		self._addType('DICT', '#E93333', dict)
+		self._addType('LIST', '#FF8000', list)
+		self._addType('TUPLE', '#FFD500', tuple)
+		self._addType('STR', '#7AC137', str)
+		self._addType('FILE', '#198B4A')
+	
+	def _addType(self, name, color, dtype=None):
+		self.__dict__['types'][name] = PortType(name, color, dtype)
+	
+	def __setattr__(self, name, color):
 		'''
-		Checks if obj can be recognized as one of the port types 
-		and returns porttype identifier.
+		Defines a new port type
+
+		:param name: port type name
+		:param color: hex color string, e.g. "#ff0000" is red
 		'''
-		# common types. Make sure they exist in both Python versions!
-		commonTypes = {
-			bool: cls.BOOL, 
-			int: cls.INT, 
-			float: cls.FLOAT, 
-			complex: cls.COMPLEX, 
-			dict: cls.DICT, 
-			list: cls.LIST, 
-			tuple: cls.TUPLE, 
-			str: cls.STR, 
-		}
-		# return best match for the objects type
-		return commonTypes.get(type(obj), cls.OBJECT)
+		self._addType(name, color)
+	
+	def __getattr__(self, name):
+		'''
+		Looks up port type by name
+
+		:param name: defined port type name
+		:returns: port type instance
+		'''
+		return self.__dict__['types'].get(name)
+	
+	def fromObj(self, obj):
+		'''
+		Looks up port type by instance
+
+		:param obj: class instance
+		:returns: port type instance
+		'''
+		for pt in self.__dict__['types'].values():
+			if pt.dtype is not None and isinstance(obj, pt.dtype):
+				return pt
+		
+		raise TypeError('No port type for data {} of type {} defined'.format(
+			obj, type(obj)))
+
+
+Ptype = PortTypeManager() # there should be only 1 global instance for the whole package
 
 
 class Node(object):

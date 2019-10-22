@@ -32,18 +32,6 @@ COL_MAIN = '#808080' # main/ordinary (node header)
 COL_HL = '#F0F0F0' # highlights (most text)
 # special colors
 COL_DATA = '#A0A0A0' # default and result value texts
-# port data type colors
-COL_DTYPE = {
-	Ptype.OBJECT: '#D0D0D0', 
-	Ptype.BOOL: '#101010', 
-	Ptype.INT: '#0080FF', 
-	Ptype.FLOAT: '#25D4EF', 
-	Ptype.COMPLEX: '#AC58FA', 
-	Ptype.DICT: '#E93333', 
-	Ptype.LIST: '#FF8000', 
-	Ptype.TUPLE: '#FFD500', 
-	Ptype.STR: '#7AC137', 
-	Ptype.FILE: '#198B4A'}
 
 def setupHoverColor(widget, hoverCol=COL_MAIN):
 	'''
@@ -167,7 +155,7 @@ class InputVisual(object):
 		
 		# add port with color for data type
 		self.port = tk.Label(self.body, text=u'⚬', font=font, bg=COL_PRIM, 
-			fg=COL_DTYPE.get(self.input.ptype, COL_DTYPE[Ptype.OBJECT]), 
+			fg=self.input.ptype.color, 
 			cursor='crosshair')
 		self.port.pack(side=tk.LEFT)
 		self.port.input = self # retrieve with: getattr(widget, 'input', None)
@@ -286,8 +274,7 @@ class OutputVisual(object):
 		
 		# add port with color for data type
 		self.port = tk.Label(self.body, text='⚬', font=font, bg=COL_PRIM, 
-			fg=COL_DTYPE.get(self.output.ptype, COL_DTYPE[Ptype.OBJECT]), 
-			cursor='crosshair')
+			fg=self.output.ptype.color, cursor='crosshair')
 		self.port.pack(side=tk.RIGHT)
 		self.port.output = self
 		self.port.bind('<Button-1>', self.onConnDrag)
