@@ -34,7 +34,6 @@ class PortTypeManager(object):
 		self._addType('COMPLEX', '#AC58FA')
 		self._addType('DICT', '#E93333', dict)
 		self._addType('LIST', '#FF8000', list)
-		self._addType('TUPLE', '#FFD500', tuple)
 		self._addType('STR', '#7AC137', str)
 		self._addType('FILE', '#198B4A')
 	

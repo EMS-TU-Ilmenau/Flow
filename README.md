@@ -113,7 +113,7 @@ It will also push out an instance of the *Blub* class whose name will be a strin
 For more examples, have a look at the already existing [nodes](flow/nodes/).
 
 #### Hints
-- Only **[JSON](https://www.w3schools.com/js/js_json_datatypes.asp) compatible default values** must be passed as default values! For other porttypes, specify the `ptype` argument, e.g. ptype=Ptype.COMPLEX.
+- Only **[JSON](https://www.w3schools.com/js/js_json_datatypes.asp) compatible default values** must be passed as default values, i.e. *bool, int, float, str, dict, list*. For other porttypes, specify the `ptype` argument, e.g. ptype=Ptype.COMPLEX without a default.
 - When calling `addInput`/`addOutput` an input/output object will be returned, so it can be stored in a class variable like in the second example, or via the `self.input`/`self.output` dictionaries using the corresponding name as key.
 - In order to load the node in the GUI, two things are of importance:
 	- The line `Node.__init__(self, 'My nodes name')` or `super(MyNode, self).__init__('My nodes name')` (you can use single or double quotes for the name)
