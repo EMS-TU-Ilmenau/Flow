@@ -10,7 +10,7 @@ class Operation(Node):
 		# build inputs and outputs
 		self.addInput('a', 1.)
 		self.addInput('b', 2.)
-		self.res = self.addOutput('c')
+		self.resOut = self.addOutput('c')
 
 
 class Add(Operation):
@@ -18,7 +18,7 @@ class Add(Operation):
 		Operation.__init__(self, 'Addition')
 	
 	def process(self, a, b):
-		self.res.push(a+b)
+		self.resOut.push(a+b)
 
 
 class Sub(Operation):
@@ -26,7 +26,7 @@ class Sub(Operation):
 		Operation.__init__(self, 'Subtraction')
 	
 	def process(self, a, b):
-		self.res.push(a-b)
+		self.resOut.push(a-b)
 
 
 class Mul(Operation):
@@ -34,7 +34,7 @@ class Mul(Operation):
 		Operation.__init__(self, 'Multiplication')
 	
 	def process(self, a, b):
-		self.res.push(a*b)
+		self.resOut.push(a*b)
 
 
 class Div(Operation):
@@ -42,7 +42,7 @@ class Div(Operation):
 		Operation.__init__(self, 'Division')
 	
 	def process(self, a, b):
-		self.res.push(a/b)
+		self.resOut.push(a/b)
 
 
 class Pow(Operation):
@@ -50,17 +50,17 @@ class Pow(Operation):
 		Operation.__init__(self, 'Power')
 	
 	def process(self, a, b):
-		self.res.push(a**b)
+		self.resOut.push(a**b)
 
 
 class MinMax(Operation):
 	def __init__(self):
 		Operation.__init__(self, 'Min Max')
-		self.res.name = 'lower'
+		self.resOut.name = 'lower'
 		self.other = self.addOutput('higher')
 	
 	def process(self, a, b):
-		self.res.push(min(a, b))
+		self.resOut.push(min(a, b))
 		self.other.push(max(a, b))
 
 
@@ -180,3 +180,18 @@ class ArcTangens(ToAngle):
 		ToAngle.__init__(self, 'Tangens to angle')
 		self.angleFunc = math.atan
 		self.hyperFunc = math.atanh
+
+
+class ConditionalData(Node):
+	'''
+	Outputs from 1 of 2 inputs, depending on condition
+	'''
+	def __init__(self):
+		Node.__init__(self, 'Conditional data')
+		self.addInput('condition', True)
+		self.addInput('forTrue', 1.)
+		self.addInput('forFalse', 2.)
+		self.resOut = self.addOutput('decision')
+	
+	def process(self, condition, forTrue, forFalse):
+		self.resOut.push(forTrue if condition else forFalse)
